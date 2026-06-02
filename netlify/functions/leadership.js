@@ -1,141 +1,145 @@
 // netlify/functions/leadership.js
-// Fetches live leadership data from ohiohouse.gov and ohiosenate.gov
-// Returns: House majority/minority leaders + Senate leaders + R/D seat counts
+// Sources Congressional Leadership directly from the Ohio Citizen's Audit home
+// page (ohiocitizensaudit.org/home.aspx). Each leader is listed there as a link
+// that contains that member's OCA profile ID, so this keeps the leadership
+// cards, including their tap-through profile IDs, in sync with the main website.
+//
+// Note: OCA itself aggregates from ohiohouse.gov and ohiosenate.gov. We pull from
+// OCA for now; sourcing the government sites directly is a possible future change.
+//
+// Returns: { fetchedAt, source, house:{leaders}, senate:{leaders} }
+// Each leader: { id, slug, name, role, district, party, ps, chamber }
+// Seat counts are intentionally omitted; OCA's home page does not publish numeric
+// counts, so the app keeps its existing hemicycle figures.
 
+const BASE = 'https://ohiocitizensaudit.org';
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (compatible; OhioCitizensAuditApp/1.0)',
   'Accept': 'text/html,application/xhtml+xml',
+  'Referer': BASE,
 };
 
 function clean(s) {
-  return (s||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+  return (s || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-// Parse leadership page from ohiohouse.gov/members/majority-leadership or minority-leadership
-function parseLeadershipPage(html, party) {
-  const members = [];
-  // Each member block: [Name\n\nDistrict N   R/D\n\nRole\n\nDescription](url)
-  const blockRx = /\[([^\]]+?)\n\n(District \d+\s+[RD])\n\n([^\n\]]+)\n\n([^\]]*)\]\(https:\/\/ohiohouse\.gov\/members\/([^)]+)\)/g;
-  let m;
-  while ((m = blockRx.exec(html)) !== null) {
-    const name     = m[1].trim();
-    const distPart = m[2].trim();                       // "District 78   R"
-    const role     = m[3].trim();
-    const slug     = m[5].trim();
-    const distM    = distPart.match(/District\s+(\d+)\s+([RD])/);
-    const district = distM ? parseInt(distM[1]) : 0;
-    const ps       = distM ? distM[2] : (party === 'majority' ? 'R' : 'D');
-    members.push({
-      name, role, district, party: ps === 'R' ? 'Republican' : 'Democrat',
-      ps, slug,
-      url: 'https://ohiohouse.gov/members/' + slug,
-    });
-  }
-  return members;
-}
+// Known leadership titles. findRoleBefore favors the title that ends nearest the
+// member link, breaking ties toward the longer title so "Speaker Pro Tempore"
+// wins over the embedded "Pro Tempore", and "Assistant Minority Leader" wins over
+// the embedded "Minority Leader".
+const ROLE_PATTERNS = [
+  'Assistant Minority Leader',
+  'Assistant Minority Whip',
+  'Speaker of the House',
+  'Speaker Pro Tempore',
+  'President Pro Tempore',
+  'Majority Leader',
+  'Minority Leader',
+  'Majority Whip',
+  'Minority Whip',
+  'Pro Tempore',
+  'President',
+  'Speaker',
+];
 
-// Parse ohiohouse.gov/members/directory to count R vs D seats
-function parseHouseSeatCount(html) {
-  // Directory lists all members with their party
-  const repCount = (html.match(/\bDistrict \d+\s+R\b/g) || []).length;
-  const demCount = (html.match(/\bDistrict \d+\s+D\b/g) || []).length;
-  return { rep: repCount, dem: demCount };
-}
-
-// Parse ohiosenate.gov/senators for Senate leadership
-async function fetchSenateLeadership() {
-  try {
-    const res = await fetch('https://www.ohiosenate.gov/senators', { headers: HEADERS });
-    if (!res.ok) return [];
-    const html = await res.text();
-    // Senate site has senators listed with their roles
-    const members = [];
-    // Look for leadership roles in the HTML
-    const roleMap = {
-      'President': 'President',
-      'President Pro Tempore': 'President Pro Tempore',
-      'Majority Floor Leader': 'Majority Leader',
-      'Minority Floor Leader': 'Minority Leader',
-      'Majority Whip': 'Majority Whip',
-      'Minority Whip': 'Minority Whip',
-    };
-    // Parse senator cards
-    const cardRx = /<a[^>]+href="\/senators\/([^"]+)"[^>]*>[\s\S]*?<\/a>/g;
-    let m;
-    while ((m = cardRx.exec(html)) !== null && members.length < 10) {
-      const slug = m[1];
-      const block = m[0];
-      const nameM = block.match(/>([A-Z][^<]{2,40}?)</);
-      const roleM = Object.keys(roleMap).find(r => block.includes(r));
-      const partyM = block.match(/Republican|Democrat/i);
-      if (nameM && roleM) {
-        const name = clean(nameM[1]);
-        const party = partyM ? partyM[0] : 'Republican';
-        members.push({
-          name, role: roleMap[roleM],
-          party, ps: party === 'Republican' ? 'R' : 'D',
-          slug, url: 'https://www.ohiosenate.gov/senators/' + slug,
-        });
-      }
+function findRoleBefore(text) {
+  let best = '';
+  let bestEnd = -1;
+  for (let i = 0; i < ROLE_PATTERNS.length; i++) {
+    const role = ROLE_PATTERNS[i];
+    const idx = text.lastIndexOf(role);
+    if (idx === -1) continue;
+    const end = idx + role.length;
+    if (end > bestEnd || (end === bestEnd && role.length > best.length)) {
+      bestEnd = end;
+      best = role;
     }
-    return members;
-  } catch(e) {
-    return [];
   }
+  return best;
+}
+
+function parseLeaders(html) {
+  // Restrict to the leadership region of the page when the heading is present.
+  let region = html;
+  const headingIdx = html.indexOf('Congressional Leadership');
+  if (headingIdx !== -1) region = html.slice(headingIdx);
+
+  const leaders = [];
+  const rx = /<a\b[^>]*href="[^"]*member_details\.aspx\?id=(\d+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while ((m = rx.exec(region)) !== null && leaders.length < 60) {
+    const id = parseInt(m[1], 10);
+    const inner = m[2];
+
+    // Portrait slug, if the card includes the member image.
+    const slugM = inner.match(/member_portraits\/([^"']+?)\.(?:jpg|jpeg|png)/i);
+    const slug = slugM ? slugM[1] : '';
+
+    const text = clean(inner);
+
+    // Name is the text up to the "District" label.
+    const nameM = text.match(/^([A-Za-z.\-'\u2019 ,]+?)\s+District/);
+    if (!nameM) continue;
+    const name = nameM[1].replace(/[,\s]+$/, '').trim();
+    if (!name) continue;
+
+    const distM = text.match(/District\D*(\d+)/);
+    const district = distM ? parseInt(distM[1], 10) : 0;
+
+    const partyM = text.match(/Republican|Democrat/i);
+    const party = partyM
+      ? partyM[0].charAt(0).toUpperCase() + partyM[0].slice(1).toLowerCase()
+      : '';
+    const ps = party === 'Republican' ? 'R' : 'D';
+
+    const chamber = /Senate/i.test(text) ? 'Senate' : 'House';
+
+    // The role label sits in the text just before this link.
+    const before = clean(region.slice(Math.max(0, m.index - 260), m.index));
+    const role = findRoleBefore(before);
+
+    leaders.push({ id, slug, name, role, district, party, ps, chamber });
+  }
+  return leaders;
 }
 
 exports.handler = async () => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',
-    'Cache-Control': 'public, max-age=3600',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
   };
 
   try {
-    // Fetch all pages in parallel
-    const [majRes, minRes, dirRes] = await Promise.all([
-      fetch('https://ohiohouse.gov/members/majority-leadership', { headers: HEADERS }),
-      fetch('https://ohiohouse.gov/members/minority-leadership', { headers: HEADERS }),
-      fetch('https://ohiohouse.gov/members/directory', { headers: HEADERS }),
-    ]);
+    const res = await fetch(`${BASE}/home.aspx`, { headers: HEADERS });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
 
-    const [majHtml, minHtml, dirHtml] = await Promise.all([
-      majRes.ok ? majRes.text() : Promise.resolve(''),
-      minRes.ok ? minRes.text() : Promise.resolve(''),
-      dirRes.ok ? dirRes.text() : Promise.resolve(''),
-    ]);
-
-    // Parse House leadership (majority + minority)
-    const majLeaders = parseLeadershipPage(majHtml, 'majority');
-    const minLeaders = parseLeadershipPage(minHtml, 'minority');
-    const houseLeaders = [...majLeaders, ...minLeaders];
-
-    // Count House seats from directory
-    const houseSeats = parseHouseSeatCount(dirHtml);
-
-    // Fetch Senate leadership (best effort)
-    const senateLeaders = await fetchSenateLeadership();
+    const all = parseLeaders(html);
+    const house = all.filter((l) => l.chamber === 'House');
+    const senate = all.filter((l) => l.chamber === 'Senate');
 
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         fetchedAt: new Date().toISOString(),
-        house: {
-          leaders: houseLeaders,
-          seats: houseSeats,
-        },
-        senate: {
-          leaders: senateLeaders,
-          seats: { rep: 24, dem: 9 }, // Senate is slower to change; fallback
-        },
+        source: 'ohiocitizensaudit.org/home.aspx',
+        house: { leaders: house },
+        senate: { leaders: senate },
       }),
     };
-  } catch(err) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: err.message }),
-    };
+  } catch (err) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
+
+// Exported for offline testing of the parser.
+exports._parseLeaders = parseLeaders;
+exports._findRoleBefore = findRoleBefore;

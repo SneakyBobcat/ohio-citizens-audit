@@ -3334,7 +3334,6 @@ function renderBillDetail(d) {
 /* ── ELECTIONS ── */
 // Hardcoded fallback dates — computed fresh each page load
 var ELECTIONS_FALLBACK = [
-  { type: 'Primary', date: 'May 5, 2026',    target: new Date('2026-05-05'), reg: 'April 6, 2026',   regTarget: new Date('2026-04-06') },
   { type: 'General', date: 'Nov 3, 2026',    target: new Date('2026-11-03'), reg: 'October 5, 2026', regTarget: new Date('2026-10-05') },
 ];
 
@@ -3369,12 +3368,27 @@ function renderElections(elections) {
   var stack = document.getElementById('elexStack');
   if (!stack) return;
 
-  // Sort by days away ascending (nearest first)
+  // Build display items, dropping any election that has already passed.
+  // daysUntil() clamps at 0, so compute the raw day delta here to detect past dates.
+  var todayMid = new Date(); todayMid.setHours(0,0,0,0);
   var items = elections.map(function(e) {
-    var days = e.daysAway !== undefined ? e.daysAway : daysUntil(e.target);
-    return { type: e.type, date: e.date, days: days };
-  }).filter(function(e) { return e.days >= 0; });
+    var raw;
+    if (e.daysAway !== undefined) {
+      raw = e.daysAway;
+    } else if (e.target) {
+      var t = new Date(e.target); t.setHours(0,0,0,0);
+      raw = Math.round((t - todayMid) / 86400000);
+    } else {
+      raw = 0;
+    }
+    return { type: e.type, date: e.date, days: Math.max(0, raw), past: raw < 0 };
+  }).filter(function(e) { return !e.past; });
   items.sort(function(a,b) { return a.days - b.days; });
+
+  if (!items.length) {
+    stack.innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-mid);font-size:.85rem;background:var(--off-white);border-radius:var(--border-r);border:1px solid var(--light-gray)">No upcoming elections scheduled.</div>';
+    return;
+  }
 
   // For progress bar: use a 365-day window from Jan 1 of election year
   var yearStart = new Date('2026-01-01');

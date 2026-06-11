@@ -107,23 +107,6 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .logo-seal{width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,.2)}
 .logo-text{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;line-height:1.15;color:var(--white);text-align:left}
 .logo-text span{display:block;font-size:.65rem;font-weight:400;color:var(--mid-gray);font-family:'Source Sans 3',sans-serif;letter-spacing:.06em;text-transform:uppercase}
-#nav-toggle{background:transparent;border:1.5px solid rgba(255,255,255,.3);color:var(--white);width:38px;height:38px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:var(--transition)}
-#nav-toggle:hover{background:rgba(255,255,255,.1)}
-.hl{display:block;width:18px;height:2px;background:var(--white);border-radius:2px;transition:var(--transition)}
-#nav-toggle.open .hl:nth-child(1){transform:translateY(7px) rotate(45deg)}
-#nav-toggle.open .hl:nth-child(2){opacity:0}
-#nav-toggle.open .hl:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-
-/* ── DRAWER NAV ── */
-#mobile-nav{background:var(--navy-dark);max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
-#mobile-nav.open{max-height:640px}
-.nav-links{list-style:none;padding:8px 0 16px;border-top:1px solid rgba(255,255,255,.08)}
-.nav-links li a,
-.nav-links li button.nav-btn{display:block;width:100%;text-align:left;background:none;border:none;padding:11px 20px;color:var(--light-gray);font-size:.95rem;font-weight:600;letter-spacing:.02em;transition:var(--transition);border-left:3px solid transparent}
-.nav-links li a:hover,.nav-links li a.active,
-.nav-links li button.nav-btn:hover,.nav-links li button.nav-btn.active{color:var(--white);background:rgba(255,255,255,.07);border-left-color:var(--gold);text-decoration:none}
-.nav-divider{height:1px;background:rgba(255,255,255,.07);margin:6px 16px}
-.nav-ext::after{content:' ↗';font-size:.75rem;opacity:.6}
 
 /* ── PAGE NAV CHIPS ── */
 .pnr{display:flex;overflow-x:auto;gap:6px;padding:10px 16px;background:var(--white);border-bottom:1px solid var(--light-gray);-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:58px;z-index:90;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
@@ -491,25 +474,7 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
       <div class="logo-seal">⚖️</div>
       <div class="logo-text">Ohio Citizen's Audit<span>Nonpartisan · Nonprofit</span></div>
     </button>
-    <button id="nav-toggle" aria-expanded="false" aria-controls="mobile-nav">
-      <span class="hl"></span><span class="hl"></span><span class="hl"></span>
-    </button>
   </div>
-  <nav id="mobile-nav" aria-label="Main navigation">
-    <ul class="nav-links">
-      <li><button class="nav-btn active" id="nav-home" onclick="showPage('home')">Home</button></li>
-      <li><button class="nav-btn" id="nav-reps" onclick="showPage('reps')">Current Representatives</button></li>
-      <li><button class="nav-btn" id="nav-part" onclick="showPage('part')">Member Participation</button></li>
-      <li><button class="nav-btn" id="nav-comm" onclick="showPage('comm')">Committees</button></li>
-      <li><button class="nav-btn" id="nav-dist" onclick="showPage('dist')">How Districts Work</button></li>
-      <li><button class="nav-btn" id="nav-bill" onclick="showPage('bill')">How a Bill Becomes Law</button></li>
-      <li><div class="nav-divider"></div></li>
-      <li><a href="https://codes.ohio.gov/ohio-constitution" target="_blank" class="nav-ext">Ohio Constitution</a></li>
-      <li><a href="https://codes.ohio.gov/ohio-revised-code" target="_blank" class="nav-ext">Ohio Revised Code</a></li>
-      <li><div class="nav-divider"></div></li>
-      <li><button class="nav-btn" id="nav-contact" onclick="showPage('contact')">Contact</button></li>
-    </ul>
-  </nav>
 </header>
 
 
@@ -1984,9 +1949,6 @@ function showPage(name, fromHistory){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   target.classList.add('active');
   window.scrollTo(0,0);
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  const nb=document.getElementById('nav-'+name);
-  if(nb)nb.classList.add('active');
   syncTabs(name);
   // History: each in-app navigation becomes a real browser history entry so the
   // system back gesture (Android back, iOS edge swipe) navigates within the app.
@@ -1995,10 +1957,6 @@ function showPage(name, fromHistory){
       try { history.pushState({ page: name }, '', '#' + name); } catch(e) {}
     }
   }
-  // close nav
-  document.getElementById('mobile-nav').classList.remove('open');
-  document.getElementById('nav-toggle').classList.remove('open');
-  document.getElementById('nav-toggle').setAttribute('aria-expanded','false');
   // init
   if(name==='home'){
     renderBillList(); renderRecentList(); drawHemi('houseChart',66,35);
@@ -2018,6 +1976,14 @@ function showPage(name, fromHistory){
     if(IS_NETLIFY && !commLoaded && !commLoading){ fetchLiveCommittees(); }
     else { filterComm(); }
   }
+}
+
+/* ── ATTRIBUTE-SAFE JSON ──
+   JSON.stringify emits double quotes, which terminate a double-quoted HTML
+   attribute early and silently break inline onclick handlers. Encode quotes
+   as &quot; so the browser decodes them back before evaluating the JS. */
+function attrJSON(o) {
+  return JSON.stringify(o).replace(/"/g, '&quot;');
 }
 
 /* ── SKELETON TEMPLATES ── */
@@ -2071,20 +2037,6 @@ function goTo(id){
 }
 
 /* ── NAV TOGGLE ── */
-const navT=document.getElementById('nav-toggle');
-const navM=document.getElementById('mobile-nav');
-navT.addEventListener('click',()=>{
-  const o=navM.classList.toggle('open');
-  navT.classList.toggle('open',o);
-  navT.setAttribute('aria-expanded',String(o));
-});
-document.addEventListener('click',e=>{
-  if(!navT.contains(e.target)&&!navM.contains(e.target)){
-    navM.classList.remove('open'); navT.classList.remove('open');
-    navT.setAttribute('aria-expanded','false');
-  }
-});
-
 /* ── HEMICYCLE ── */
 function drawHemi(id,rep,dem){
   const cv=document.getElementById(id); if(!cv)return;
@@ -2566,7 +2518,7 @@ function renderPart() {
         const pu  = nameToPortraitUrl(m.name);
         const ini = m.name.split(' ').filter(w => /[A-Z]/.test(w[0])).slice(0,2).map(w => w[0]).join('');
         const bg  = m.ps==='R' ? 'linear-gradient(135deg,#8b1a1a,#cc2200)' : 'linear-gradient(135deg,#1a2f8b,#0044cc)';
-        const fb  = JSON.stringify({name:m.name,party:m.party,ps:m.ps,chamber:m.chamber,district:m.district});
+        const fb  = attrJSON({name:m.name,party:m.party,ps:m.ps,chamber:m.chamber,district:m.district});
         const chamberLabel = m.chamber === 'Senate' ? 'Senator' : 'Representative';
         const isLast = idx === sortedMembers.length - 1;
         return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;'+(isLast?'':'border-bottom:1px solid var(--light-gray)')+';cursor:pointer" '
@@ -2647,7 +2599,7 @@ function renderPart() {
     const pu  = nameToPortraitUrl(m.name);
     const ini = m.name.split(' ').filter(w => /[A-Z]/.test(w[0])).slice(0,2).map(w => w[0]).join('');
     const bg  = m.ps==='R' ? 'linear-gradient(135deg,#8b1a1a,#cc2200)' : 'linear-gradient(135deg,#1a2f8b,#0044cc)';
-    const fb  = JSON.stringify({name:m.name,party:m.party,ps:m.ps,chamber:m.chamber,district:m.district});
+    const fb  = attrJSON({name:m.name,party:m.party,ps:m.ps,chamber:m.chamber,district:m.district});
     return '<div class="part-card" style="cursor:pointer" onclick="openMemberProfile('+m.id+','+fb+')">'
       + '<div class="part-top">'
       + '<div class="rank-badge '+bc+'">'+m.rank+'</div>'
@@ -2949,7 +2901,7 @@ function renderCommDetail(d) {
       var pu  = nameToPortraitUrl(m.name);
       var ini = m.name.split(' ').filter(function(w){return /[A-Z]/.test(w[0]);}).slice(0,2).map(function(w){return w[0];}).join('');
       var bg  = m.ps==='R' ? 'linear-gradient(135deg,#8b1a1a,#cc2200)' : 'linear-gradient(135deg,#1a2f8b,#0044cc)';
-      var fb  = JSON.stringify({name:m.name,party:m.party,ps:m.ps,chamber:m.chamber||d.chamber,district:m.district});
+      var fb  = attrJSON({name:m.name,party:m.party,ps:m.ps,chamber:m.chamber||d.chamber,district:m.district});
       var roleBadge = m.role
         ? '<span style="font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:100px;background:' + (m.ps==='R'?'#fde8e8':'#e8edfb') + ';color:' + (m.ps==='R'?'#8b0000':'#1a3a8b') + ';margin-left:4px">' + m.role + '</span>'
         : '';
@@ -3031,7 +2983,7 @@ async function openMemberProfile(id, fallback) {
   profileFromPage = active ? (active.id.replace('page-','') || 'home') : 'home';
   profileScrollY  = window.scrollY;
 
-  var labels = {reps:'Current Representatives', part:'Member Participation', comm:'Committees', home:'Home'};
+  var labels = {reps:'Current Representatives', part:'Member Participation', comm:'Committees', home:'Home', 'bill-detail':'Bill Details', 'comm-detail':'Committee'};
   var backLbl = document.getElementById('profBackLabel');
   if (backLbl) backLbl.textContent = labels[profileFromPage] || '';
 
@@ -3451,9 +3403,9 @@ function renderBillFallback(id, f) {
 function makeSponsorCard(sp, isPrimary) {
   var bg = sp.ps==='R' ? 'linear-gradient(135deg,#8b1a1a,#cc2200)' : 'linear-gradient(135deg,#1a2f8b,#0044cc)';
   var initials = (sp.name||'').split(' ').filter(function(w){return /[A-Z]/.test(w[0]);}).slice(0,2).map(function(w){return w[0];}).join('');
-  var onclick = 'onclick="openMemberProfile(' + sp.id + ',{name:' + JSON.stringify(sp.name) +
-    ',party:' + JSON.stringify(sp.party) + ',ps:' + JSON.stringify(sp.ps) +
-    ',chamber:' + JSON.stringify(sp.chamber) + ',district:' + sp.district + '})"';
+  var onclick = 'onclick="openMemberProfile(' + sp.id + ',' +
+    attrJSON({name:sp.name, party:sp.party, ps:sp.ps, chamber:sp.chamber, district:sp.district}) +
+    ')" style="cursor:pointer"';
   var photoHtml = sp.portraitUrl
     ? '<img class="sponsor-photo" loading="lazy" decoding="async" src="' + sp.portraitUrl + '" alt="' + sp.name +
       '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>' +

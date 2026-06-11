@@ -20,13 +20,26 @@ Test on a real phone where possible. Items marked (data) confirm live pulls from
 - [ ] House/Senate toggle splits committees correctly
 - [ ] Tapping a committee opens its detail page
 
+## Tap-through to profiles (quote-bug fix)
+- [ ] Bill detail: tapping a PRIMARY SPONSOR opens their profile
+- [ ] Bill detail: tapping a CO-SPONSOR opens their profile
+- [ ] Committees → committee → bill → sponsor: tap opens profile
+- [ ] Committee detail: tapping a MEMBER row opens their profile
+- [ ] Participation page: tapping a member card opens their profile
+- [ ] Reps page: tapping a member row opens their profile
+- [ ] Works for names with apostrophes (e.g., O'Brien-style names)
+- [ ] Profile back button returns to the bill/committee you came from, with its content intact
+
+## Header
+- [ ] Hamburger menu is gone; header shows brand only
+- [ ] Every page is still reachable: 4 tabs + More (Districts, Bill Law, Contact, Constitution, Revised Code)
+
 ## Navigation
 - [ ] Android back button / iPhone edge-swipe goes BACK within the app, does not exit
 - [ ] Back from a profile returns to the same scroll position in the list
 - [ ] Bottom tab bar: Home, Reps, Participation, Committees, More all work
 - [ ] Tab bar clears the iPhone home indicator (safe area)
 - [ ] "Participation" label fits on a small phone screen
-- [ ] More tab: Districts, Bill Becomes Law, Contact, Constitution, Revised Code links work
 - [ ] Pages fade in; profile/bill/committee details slide in from the right
 - [ ] Deep link works: visit /#comm directly, lands on Committees
 

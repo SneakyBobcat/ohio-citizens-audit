@@ -1,6 +1,17 @@
 // netlify/functions/committee_detail.js
-// Fetches a committee detail page from ohiocitizensaudit.org
-// Returns: name, chamber, members (with roles), bills
+// Fetches a committee detail page from ohiocitizensaudit.org/committee_details.aspx?id=X
+// Returns: name, chamber, members (with roles), bills.
+//
+// Parsing strategy: anchor on the member_details / bill_details links inside the
+// #committee_members and #committee_bills sections, then read fields from the
+// CLEANED text of each link ("Name District 32 Political Party Republican ...",
+// "Title General Assembly 136 Number S. B. No. 435 Type Senate Bill"). This is
+// markup-agnostic, so it works whether OCA wraps cards in tables or divs.
+//
+// Role-label trap: the Members section opens with DEFINITIONS of Chair, Vice
+// Chair, and Ranking Member before the roster. Roles are therefore assigned
+// only when the cleaned text immediately preceding a member link ENDS with the
+// role label (the definitions end with prose sentences, so they never match).
 
 const BASE = 'https://ohiocitizensaudit.org';
 const HEADERS = {
@@ -10,8 +21,8 @@ const HEADERS = {
 };
 
 function clean(s) {
-  return (s||'').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&#39;/g,"'")
-    .replace(/&quot;/g,'"').replace(/\s+/g,' ').trim();
+  return (s||'').replace(/<[^>]+>/g,' ').replace(/&amp;/g,'&').replace(/&#39;/g,"'")
+    .replace(/&quot;/g,'"').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
 }
 
 function oca_slug(name) {
@@ -20,90 +31,93 @@ function oca_slug(name) {
   return name.replace(/\./g,'').toLowerCase().replace(/ +/g,'_');
 }
 
+function roleBefore(html, anchorIndex) {
+  // Cleaned text of the slice just before this link; a real role label sits at
+  // its very end ("... presides over meetings. Chair" -> Chair belongs to the
+  // NEXT link; "... District 32 Political Party Republican" -> no role).
+  const windowText = clean(html.slice(Math.max(0, anchorIndex - 400), anchorIndex));
+  if (/Vice Chair$/.test(windowText))     return 'Vice Chair';
+  if (/Ranking Member$/.test(windowText)) return 'Ranking Member';
+  if (/Chair$/.test(windowText))          return 'Chair';
+  return '';
+}
+
 function parseCommitteeDetail(html, id) {
-  // Name
   const nameM = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/);
   const name  = nameM ? clean(nameM[1]) : '';
-
-  // Chamber from name
   const chamber = name.toLowerCase().startsWith('senate') ? 'Senate' : 'House';
 
-  // Members section
+  // ── Section boundaries ──
+  let memStart  = html.search(/id="committee_members"/);
+  let billStart = html.search(/id="committee_bills"/);
+  if (memStart  === -1) memStart  = 0;
+  const memEnd  = billStart !== -1 ? billStart : html.length;
+  const memHtml = html.slice(memStart, memEnd);
+  const billHtml = billStart !== -1 ? html.slice(billStart) : html;
+
+  // ── Members ──
   const members = [];
-  const memSecM = html.match(/id="committee_members"[\s\S]*?(?=id="committee_bills"|$)/);
-  if (memSecM) {
-    const secHtml = memSecM[0];
-    // Current role tracking - roles appear as text before the member link
-    // Parse as table cells
-    const cellRx = /<td[^>]*>([\s\S]*?)<\/td>/g;
-    let cm;
-    let currentRole = '';
-    while ((cm = cellRx.exec(secHtml)) !== null) {
-      const cell = cm[1];
-      // Check if this cell is a role label (contains role text before the link)
-      const roleM = cell.match(/^(Chair|Vice Chair|Ranking Member)/);
-      const idM   = cell.match(/member_details\.aspx\?id=(\d+)/);
-      const nameTextM = cell.match(/data_detail_name[^>]*>([\s\S]*?)<\/div>/);
+  const seen = {};
+  const memRx = /<a\b[^>]*href="[^"]*member_details\.aspx\?id=(\d+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while ((m = memRx.exec(memHtml)) !== null && members.length < 60) {
+    const mid  = parseInt(m[1], 10);
+    if (seen[mid]) continue;
+    const text = clean(m[2]);
 
-      if (roleM) currentRole = roleM[1];
+    // Name: text up to the District label
+    let memberName = text;
+    const dIdx = text.search(/\bDistrict\b/);
+    if (dIdx > 0) memberName = text.slice(0, dIdx);
+    memberName = memberName.replace(/[\-–|,\s]+$/, '').trim();
+    if (!memberName) continue;
 
-      if (idM) {
-        const mid   = parseInt(idM[1]);
-        // Extract name from the cell
-        const nameRaw = nameTextM ? clean(nameTextM[1]) : '';
-        // Fallback: find name before District
-        const nameAlt = clean(cell.split('District')[0]).replace(/^.*\|/,'').trim();
-        const memberName = nameRaw || nameAlt.split('\n')[0].trim();
+    const distM  = text.match(/District\D*(\d+)/);
+    const partyM = text.match(/Republican|Democrat/i);
+    const party  = partyM ? partyM[0].charAt(0).toUpperCase() + partyM[0].slice(1).toLowerCase() : '';
+    const slugM  = m[2].match(/member_portraits\/([^"']+?)\.(?:jpg|jpeg|png)/i);
 
-        // District and party
-        const distM  = cell.match(/District\s*\|\s*(\d+)/s);
-        const partyM = cell.match(/Political Party\s*\|\s*(Republican|Democrat)/s);
-
-        const dist  = distM  ? parseInt(distM[1])  : 0;
-        const party = partyM ? partyM[1].trim()    : '';
-
-        if (memberName) {
-          const role = currentRole;
-          members.push({
-            id: mid, name: memberName, role, district: dist, party,
-            ps: party === 'Republican' ? 'R' : 'D',
-            portraitUrl: `${BASE}/Pictures/member_portraits/${oca_slug(memberName)}.jpg`,
-            profileUrl:  `${BASE}/member_details.aspx?id=${mid}`,
-          });
-          currentRole = ''; // reset after use
-        }
-      }
-    }
+    seen[mid] = true;
+    members.push({
+      id: mid,
+      name: memberName,
+      role: roleBefore(memHtml, m.index),
+      district: distM ? parseInt(distM[1], 10) : 0,
+      party,
+      ps: party === 'Republican' ? 'R' : 'D',
+      chamber,
+      portraitUrl: `${BASE}/Pictures/member_portraits/${slugM ? slugM[1] : oca_slug(memberName)}.jpg`,
+      profileUrl:  `${BASE}/member_details.aspx?id=${mid}`,
+    });
   }
 
-  // Bills section
+  // ── Bills ──
   const bills = [];
-  const billSecM = html.match(/id="committee_bills"[\s\S]*?(?=<div id="Footer"|$)/);
-  if (billSecM) {
-    const rx = /bill_details\.aspx\?id=(\d+)[^>]*>([\s\S]*?)<\/a>/g;
-    let bm;
-    while ((bm = rx.exec(billSecM[0])) !== null && bills.length < 20) {
-      const block = bm[2];
-      const cleanBlock = clean(block);
-      const lines = cleanBlock.split(/\s{3,}/).map(s=>s.trim()).filter(s=>s.length>10);
-      const title = lines[0] || '';
-      const rows  = (block.match(/<tr[\s\S]*?<\/tr>/g)||[]);
-      const fields = {};
-      rows.forEach(row=>{
-        const cells=(row.match(/<td[^>]*>([\s\S]*?)<\/td>/g)||[]).map(c=>clean(c));
-        if(cells.length>=2) fields[cells[0]]=cells[1];
-      });
-      if (title) {
-        bills.push({
-          id:    parseInt(bm[1]),
-          name:  title,
-          num:   fields['Number']||'',
-          ga:    fields['General Assembly']||'136',
-          type:  fields['Type']||'',
-          href:  `${BASE}/bill_details.aspx?id=${bm[1]}`,
-        });
-      }
-    }
+  const billRx = /<a\b[^>]*href="[^"]*bill_details\.aspx\?id=(\d+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let b;
+  while ((b = billRx.exec(billHtml)) !== null && bills.length < 30) {
+    const bid  = parseInt(b[1], 10);
+    const text = clean(b[2]);
+    if (!text || text.length < 8) continue; // skip icon-only / pager links
+
+    let title = text;
+    const gaIdx = text.search(/\bGeneral Assembly\b/);
+    if (gaIdx > 0) title = text.slice(0, gaIdx);
+    title = title.replace(/[\-–|,\s]+$/, '').trim();
+    if (!title) continue;
+
+    const gaM   = text.match(/General Assembly\D*(\d+)/);
+    const numM  = text.match(/Number\s+(.+?)\s+Type\b/);
+    const typeM = text.match(/Type\s+((?:House|Senate)\s+(?:Bill|Concurrent Resolution|Joint Resolution|Resolution))/);
+
+    bills.push({
+      id:   bid,
+      name: title,
+      num:  numM  ? numM[1].trim()  : '',
+      ga:   gaM   ? gaM[1]          : '',
+      type: typeM ? typeM[1].trim() : '',
+      href: `${BASE}/bill_details.aspx?id=${bid}`,
+    });
   }
 
   return { id, name, chamber, members, bills, fetchedAt: new Date().toISOString() };
@@ -129,3 +143,5 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
+
+exports._parse = parseCommitteeDetail;

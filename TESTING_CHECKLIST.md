@@ -14,6 +14,11 @@ Test on a real phone where possible. Items marked (data) confirm live pulls from
 - [ ] Portraits load on leadership cards
 
 ## Committees (live sourcing)
+- [ ] Committee detail page shows MEMBERS first (Chair, Vice Chair, Ranking Member badged, then the rest), then BILLS
+- [ ] (data) Member list matches the same committee on ohiocitizensaudit.org (spot check one House + one Senate committee)
+- [ ] Tapping a committee member opens their profile; back returns to the committee
+- [ ] Committee bills show number, GA, and type, and tapping one opens the bill
+- [ ] Member portraits load; if one fails, initials show instead
 - [ ] (data) Committees page shows green "Live · ohiocitizensaudit.org" badge
 - [ ] Yellow "Static Data" warning is GONE (it only appears if the live fetch fails)
 - [ ] (data) Bill/member counts match ohiocitizensaudit.org/committees.aspx (spot check: House Judiciary, Senate Finance)

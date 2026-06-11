@@ -20,6 +20,18 @@ Test on a real phone where possible. Items marked (data) confirm live pulls from
 - [ ] House/Senate toggle splits committees correctly
 - [ ] Tapping a committee opens its detail page
 
+## Color system (one meaning per color)
+- [ ] Red/blue chips appear ONLY for party (Republican/Democrat)
+- [ ] Bill numbers are solid navy chips everywhere (home, detail, profile)
+- [ ] "House Bill"/"Senate Bill" type chips are neutral gray (no red/blue)
+- [ ] Committee card House/Senate tags are neutral gray
+- [ ] Committee names are teal everywhere (home cards, bill detail, profiles, participation pills)
+- [ ] Status colors: Effective/Passed green · Introduced/In Committee amber · Vetoed/Failed dark gray — same on home AND detail pages
+- [ ] GA chip is gray (not yellow) on home cards
+- [ ] District chips are gray on both leadership and participation pages
+- [ ] Bill sponsor party chips: Republican red, Democrat blue (were broken/inverted)
+- [ ] Home bill card with an apostrophe in its title is tappable (live data case)
+
 ## Tap-through to profiles (quote-bug fix)
 - [ ] Bill detail: tapping a PRIMARY SPONSOR opens their profile
 - [ ] Bill detail: tapping a CO-SPONSOR opens their profile

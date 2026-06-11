@@ -199,10 +199,13 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .bn{font-size:.85rem;font-weight:600;color:var(--text-dark);line-height:1.35;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .bm{display:flex;flex-wrap:wrap;gap:5px}
 .bt{font-size:.68rem;font-weight:600;padding:2px 7px;border-radius:100px;white-space:nowrap}
-.bt.type{background:#e8f0fb;color:var(--ink-mid)}
-.bt.ga{background:#fef3e2;color:#8a5c00}
-.bt.com{background:#f0f4f0;color:#2d5a27}
-.bt.sta{background:#f0f8f4;color:var(--success)}
+.bt.num{background:var(--navy);color:#fff}
+.bt.type{background:var(--light-gray);color:var(--text-mid)}
+.bt.ga{background:var(--light-gray);color:var(--text-mid)}
+.bt.com{background:#e1f5ee;color:#0f6e56}
+.bt.sta{background:#fef9ec;color:#7a4f00}
+.bt.sta.pos{background:#e8f8ee;color:var(--success)}
+.bt.sta.neg{background:var(--mid-gray);color:var(--white)}
 .bt.upd{background:var(--light-gray);color:var(--text-mid)}
 .pagi{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:16px}
 .pbtn{background:var(--white);border:1.5px solid var(--mid-gray);color:var(--ink);font-weight:700;width:36px;height:36px;border-radius:6px;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
@@ -269,7 +272,7 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .ptag.R{background:#fde8e8;color:#8b0000}
 .ptag.D{background:#e8edfb;color:#1a3a8b}
 .ptag.chamber{background:var(--light-gray);color:var(--text-mid)}
-.ptag.dist{background:#f0f8f0;color:#2d5a27}
+.ptag.dist{background:var(--light-gray);color:var(--text-mid)}
 .part-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .pstat{background:var(--off-white);border-radius:6px;padding:8px 10px;text-align:center}
 .pstat-val{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink)}
@@ -283,7 +286,7 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .committees-row{border-top:1px solid var(--light-gray);padding-top:8px}
 .committees-label{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light);margin-bottom:5px}
 .committee-pills{display:flex;flex-wrap:wrap;gap:4px}
-.cpill{font-size:.67rem;background:#eef3f8;color:var(--ink-mid);padding:2px 8px;border-radius:100px;font-weight:600}
+.cpill{font-size:.67rem;background:#e1f5ee;color:#0f6e56;padding:2px 8px;border-radius:100px;font-weight:600}
 .part-list{display:flex;flex-direction:column;gap:10px;padding:0 16px 28px}
 .view-toggle{display:flex;border:1.5px solid var(--light-gray);border-radius:6px;overflow:hidden;margin-bottom:0}
 .vt-btn{flex:1;padding:7px 8px;font-size:.78rem;font-weight:700;background:var(--white);border:none;color:var(--text-light);transition:var(--transition);cursor:pointer}
@@ -363,7 +366,7 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .comm-name{font-size:.82rem;font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:7px}
 .comm-stats{display:flex;gap:5px;flex-wrap:wrap}
 .comm-stat{font-size:.67rem;font-weight:600;padding:2px 7px;border-radius:100px}
-.comm-stat.bills{background:#e8f0fb;color:var(--ink-mid)}
+.comm-stat.bills{background:var(--light-gray);color:var(--text-mid)}
 .comm-stat.members{background:var(--light-gray);color:var(--text-mid)}
 .comm-bar{height:3px;border-radius:100px;background:var(--light-gray);margin-top:8px;overflow:hidden}
 .comm-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--navy),var(--navy-mid))}
@@ -411,13 +414,17 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .prof-bill-title{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.45;margin-bottom:5px}
 .prof-bill-tags{display:flex;flex-wrap:wrap;gap:4px}
 .pbt{font-size:.63rem;font-weight:600;padding:2px 8px;border-radius:100px}
-.pbt.num{background:#e8f0fb;color:var(--ink-mid)}
+.pbt.num{background:var(--navy);color:#fff}
 .pbt.type{background:var(--light-gray);color:var(--text-mid)}
-.pbt.comm{background:#f0f8f0;color:#2d5a27}
+.pbt.comm{background:#e1f5ee;color:#0f6e56}
 .pbt.yes{background:#e8f8ee;color:var(--success)}
-.pbt.no{background:#fde8e8;color:#8b0000}
+.pbt.no{background:var(--mid-gray);color:var(--white)}
 .pbt.date{background:var(--off-white);color:var(--text-light);border:1px solid var(--light-gray)}
 .pbt.result{background:#fef9ec;color:#7a4f00}
+.pbt.result.pos{background:#e8f8ee;color:var(--success)}
+.pbt.result.neg{background:var(--mid-gray);color:var(--white)}
+.pbt.R{background:#fde8e8;color:#8b0000}
+.pbt.D{background:#e8edfb;color:#1a3a8b}
 .prof-view-all{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;padding:10px;border:1.5px solid var(--light-gray);border-radius:8px;font-size:.8rem;font-weight:700;color:var(--ink-mid);text-decoration:none;transition:var(--transition)}
 .prof-view-all:hover{background:var(--off-white);border-color:var(--ink-mid)}
 .prof-loading{text-align:center;padding:60px 20px}
@@ -1986,6 +1993,16 @@ function attrJSON(o) {
   return JSON.stringify(o).replace(/"/g, '&quot;');
 }
 
+/* ── STATUS COLOR SCALE ──
+   One consistent meaning app-wide: green = enacted/passed, amber = in
+   progress (default), filled gray = terminal-negative. Red stays party-only. */
+function statusClass(s) {
+  s = String(s || '').toLowerCase();
+  if (/effective|enact|became law|passed|signed|adopt/.test(s)) return ' pos';
+  if (/veto|fail|defeat|died|withdraw|postponed indefinitely/.test(s)) return ' neg';
+  return '';
+}
+
 /* ── SKELETON TEMPLATES ── */
 // Content-shaped placeholders shown while detail pages fetch live data.
 function skelLines() {
@@ -2085,18 +2102,18 @@ const PS=5; let bp=0,rp=0;
 function mkCard(b){
   const ico=b.type&&b.type.includes('House')?'🏛️':b.type&&b.type.includes('Senate')?'⚖️':'📋';
   const tags=[];
-  if(b.num)tags.push(`<span class="bt type">${b.num}</span>`);
+  if(b.num)tags.push(`<span class="bt num">${b.num}</span>`);
   if(b.ga)tags.push(`<span class="bt ga">GA ${b.ga}</span>`);
   if(b.type)tags.push(`<span class="bt type">${b.type}</span>`);
   if(b.com)tags.push(`<span class="bt com">${b.com}</span>`);
-  if(b.sta)tags.push(`<span class="bt sta">${b.sta}</span>`);
+  if(b.sta)tags.push(`<span class="bt sta${statusClass(b.sta)}">${b.sta}</span>`);
   if(b.upd)tags.push(`<span class="bt upd">Updated ${b.upd}</span>`);
   // Extract bill ID from href for in-app detail
   const idM = (b.href||'').match(/id=(\d+)/);
   const bid = idM ? parseInt(idM[1]) : 0;
   if(bid){
-    const fb = JSON.stringify({name:b.name,num:b.num||'',type:b.type||''});
-    return `<div class="bill-card" onclick='openBillDetail(${bid},${fb})'><div class="bi">${ico}</div><div class="bb"><div class="bn">${b.name}</div><div class="bm">${tags.join('')}</div></div><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0;margin-left:auto;align-self:center"><path d="M9 18l6-6-6-6"/></svg></div>`;
+    const fb = attrJSON({name:b.name,num:b.num||'',type:b.type||''});
+    return `<div class="bill-card" onclick="openBillDetail(${bid},${fb})"><div class="bi">${ico}</div><div class="bb"><div class="bn">${b.name}</div><div class="bm">${tags.join('')}</div></div><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0;margin-left:auto;align-self:center"><path d="M9 18l6-6-6-6"/></svg></div>`;
   }
   return `<a href="${b.href}" target="_blank" class="bill-card"><div class="bi">${ico}</div><div class="bb"><div class="bn">${b.name}</div><div class="bm">${tags.join('')}</div></div></a>`;
 }
@@ -2808,8 +2825,8 @@ function filterComm() {
 
   grid.innerHTML = data.map(function(comm) {
     const chamTag = comm.chamber === 'House'
-      ? '<span class="comm-stat" style="background:#fde8e8;color:#8b0000">🏛️ House</span>'
-      : '<span class="comm-stat" style="background:#e8edfb;color:#1a3a8b">⚖️ Senate</span>';
+      ? '<span class="comm-stat" style="background:var(--light-gray);color:var(--text-mid)">🏛️ House</span>'
+      : '<span class="comm-stat" style="background:var(--light-gray);color:var(--text-mid)">⚖️ Senate</span>';
     const billsTag   = comm.bills   ? '<span class="comm-stat bills">📋 '+comm.bills+' bills</span>'   : '';
     const membersTag = comm.members ? '<span class="comm-stat members">👥 '+comm.members+' members</span>' : '';
     // Extract committee ID from OCA url
@@ -3155,7 +3172,7 @@ function renderMemberProfile(d) {
         '<div style="flex:1;min-width:0"><div class="prof-bill-title">' + v.title + '</div>' +
         '<div class="prof-bill-tags">' +
         (v.vote   ? '<span class="pbt ' + voteCls + '">' + v.vote + '</span>' : '') +
-        (v.result ? '<span class="pbt result">' + v.result + '</span>' : '') +
+        (v.result ? '<span class="pbt result' + statusClass(v.result) + '">' + v.result + '</span>' : '') +
         (v.date   ? '<span class="pbt date">' + v.date + '</span>' : '') +
         '</div></div></a>';
     }).join('');
@@ -3415,23 +3432,20 @@ function makeSponsorCard(sp, isPrimary) {
     photoHtml +
     '<div class="sponsor-name">' + sp.name + '</div>' +
     '<div class="sponsor-tags">' +
-      '<span class="pbt ' + (sp.ps==='R'?'num':'vote-no') + '">' + sp.party + '</span>' +
+      '<span class="pbt ' + (sp.ps==='R'?'R':'D') + '">' + sp.party + '</span>' +
       (sp.district ? '<span class="pbt date">Dist. ' + sp.district + '</span>' : '') +
     '</div>' +
   '</div>';
 }
 
 function renderBillDetail(d) {
-  var typeColor = (d.type||'').includes('Senate') ? '#e8edfb' : '#fde8e8';
-  var typeText  = (d.type||'').includes('Senate') ? 'var(--dem-blue)' : 'var(--rep-red)';
-
   var heroHtml =
     '<div class="bill-hero">' +
       '<div class="bill-hero-eyebrow">' +
         (d.number ? '<span class="pbt num">' + d.number + '</span>' : '') +
-        (d.type   ? '<span style="background:' + typeColor + ';color:' + typeText + ';font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:100px">' + d.type + '</span>' : '') +
+        (d.type   ? '<span class="pbt type">' + d.type + '</span>' : '') +
         (d.ga     ? '<span class="pbt date">GA ' + d.ga + '</span>' : '') +
-        (d.status ? '<span class="pbt result">' + d.status + '</span>' : '') +
+        (d.status ? '<span class="pbt result' + statusClass(d.status) + '">' + d.status + '</span>' : '') +
       '</div>' +
       '<div class="bill-hero-title">' + (d.title||'Bill Details') + '</div>' +
     '</div>';

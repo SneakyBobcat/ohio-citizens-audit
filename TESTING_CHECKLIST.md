@@ -1,0 +1,50 @@
+# Testing Checklist
+Barebones list of changes to verify on the live site after deploy.
+Test on a real phone where possible. Items marked (data) confirm live pulls from ohiocitizensaudit.org.
+
+## Data fixes
+- [ ] Home: leadership cards open the CORRECT profile, especially Steve Demetriou, Phillip M. Robinson Jr., Kent Smith, Nickie J. Antonio
+- [ ] Home: voter registration banner reads "October 5, 2026"
+- [ ] Home: elections section shows ONLY General Election Nov 3, 2026 (no May 5 primary)
+- [ ] (data) Home: election countdown days match ohiocitizensaudit.org
+
+## Leadership (live sourcing)
+- [ ] (data) Home leadership cards match ohiocitizensaudit.org/home.aspx (names, roles, districts)
+- [ ] (data) Live-loaded leadership cards are TAPPABLE and open the right profile
+- [ ] Portraits load on leadership cards
+
+## Committees (live sourcing)
+- [ ] (data) Committees page shows green "Live · ohiocitizensaudit.org" badge
+- [ ] Yellow "Static Data" warning is GONE (it only appears if the live fetch fails)
+- [ ] (data) Bill/member counts match ohiocitizensaudit.org/committees.aspx (spot check: House Judiciary, Senate Finance)
+- [ ] House/Senate toggle splits committees correctly
+- [ ] Tapping a committee opens its detail page
+
+## Navigation
+- [ ] Android back button / iPhone edge-swipe goes BACK within the app, does not exit
+- [ ] Back from a profile returns to the same scroll position in the list
+- [ ] Bottom tab bar: Home, Reps, Participation, Committees, More all work
+- [ ] Tab bar clears the iPhone home indicator (safe area)
+- [ ] "Participation" label fits on a small phone screen
+- [ ] More tab: Districts, Bill Becomes Law, Contact, Constitution, Revised Code links work
+- [ ] Pages fade in; profile/bill/committee details slide in from the right
+- [ ] Deep link works: visit /#comm directly, lands on Committees
+
+## Platform / PWA
+- [ ] Pinch zoom works on every page
+- [ ] Add to Home Screen: gold scales icon appears, app launches full screen
+- [ ] Airplane mode: app still opens and shows fallback data (offline shell)
+- [ ] After a new deploy: refresh once, confirm new version appears (no stale cache)
+- [ ] Long-press app icon: shortcuts to Reps / Committees / Participation
+
+## Delight
+- [ ] Cards visibly respond when pressed (slight shrink/dim)
+- [ ] Opening a profile/bill/committee shows shimmer skeleton placeholders, not a spinner
+- [ ] Phone in dark mode: app follows it; navy/gold preserved; text readable everywhere
+- [ ] Phone in light mode: unchanged from before
+- [ ] iOS Settings > Accessibility > Reduce Motion: animations and shimmer stop
+
+## Known intentional behaviors
+- House lists two "Minority Leader" cards: mirrors the main site
+- Data may be up to 1 hour old (function caching); leadership is always fresh
+- If a live fetch fails, the app silently falls back to embedded data

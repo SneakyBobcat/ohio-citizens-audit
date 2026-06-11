@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <meta name="description" content="Ohio Citizen's Audit — nonpartisan, nonprofit organization providing accessible data on Ohio government."/>
+<meta name="theme-color" content="#002b54" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#0a121d" media="(prefers-color-scheme: dark)"/>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"/>
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="OH Audit"/>
 <title>Ohio Citizen's Audit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com"/>
@@ -16,6 +25,7 @@
   --white:#ffffff;--off-white:#f4f6f9;--light-gray:#e8ecf1;
   --mid-gray:#c5cdd6;--text-dark:#1a2535;--text-mid:#4a5568;
   --text-light:#718096;--success:#1a6b3c;
+  --ink:#002b54;--ink-mid:#003f7a;
   --rep-red:#cc2200;--dem-blue:#0044cc;
   --border-r:8px;
   --shadow-sm:0 1px 4px rgba(0,0,0,.10);
@@ -23,9 +33,39 @@
   --transition:.22s ease;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── DARK MODE (follows system setting) ──
+   Navy header, gold accents, and party colors stay; surfaces and ink flip. */
+@media (prefers-color-scheme:dark){
+  :root{
+    --white:#101b29;--off-white:#0a121d;--light-gray:#22324a;
+    --mid-gray:#41546e;--text-dark:#e9eef5;--text-mid:#b9c5d4;--text-light:#8b9bae;
+    --ink:#d8e4f4;--ink-mid:#a9c7ea;--success:#4cd08a;
+    --shadow-sm:0 1px 4px rgba(0,0,0,.45);
+    --shadow-md:0 4px 16px rgba(0,0,0,.55);
+  }
+  html{color-scheme:dark}
+  #tabbar{background:rgba(13,21,33,.93);box-shadow:0 -1px 8px rgba(0,0,0,.4)}
+}
+
+/* ── PRESS FEEDBACK (native-feeling tap response) ── */
+div[onclick],button{-webkit-tap-highlight-color:transparent}
+div[onclick]{transition:transform .08s ease,opacity .08s ease}
+div[onclick]:active{transform:scale(.985);opacity:.88}
+
+/* ── SKELETON LOADING ── */
+.skel{position:relative;overflow:hidden;background:var(--light-gray);border-radius:6px}
+.skel::after{content:'';position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:skelSweep 1.3s infinite}
+@media (prefers-color-scheme:dark){.skel::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}}
+@keyframes skelSweep{to{transform:translateX(100%)}}
+.skel-circle{border-radius:50%}
+@media (prefers-reduced-motion:reduce){
+  .skel::after{animation:none}
+  div[onclick]:active{transform:none}
+}
 html{font-size:16px;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{font-family:'Source Sans 3',sans-serif;background:var(--off-white);color:var(--text-dark);line-height:1.6;min-height:100vh}
-a{color:var(--navy-mid);text-decoration:none}
+a{color:var(--ink-mid);text-decoration:none}
 a:hover{text-decoration:underline}
 button{cursor:pointer;font-family:inherit}
 img{max-width:100%;display:block}
@@ -33,7 +73,32 @@ select,input[type="text"]{font-family:inherit}
 
 /* ── ROUTER ── */
 .page{display:none}
-.page.active{display:block}
+.page.active{display:block;animation:pageIn .24s ease both}
+#page-profile.active,#page-bill-detail.active,#page-comm-detail.active{animation:pageSlideIn .26s cubic-bezier(.2,.8,.3,1) both}
+@keyframes pageIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pageSlideIn{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
+@media (prefers-reduced-motion:reduce){
+  .page.active,#page-profile.active,#page-bill-detail.active,#page-comm-detail.active{animation:none}
+  html{scroll-behavior:auto}
+}
+
+/* ── BOTTOM TAB BAR ── */
+body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+#tabbar{position:fixed;bottom:0;left:0;right:0;z-index:90;display:flex;background:rgba(255,255,255,.93);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--light-gray);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -1px 8px rgba(0,43,84,.06)}
+.tab-btn{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px 5px;color:var(--text-light);font-size:.58rem;font-weight:600;letter-spacing:.02em;line-height:1.2;-webkit-tap-highlight-color:transparent;transition:color var(--transition)}
+.tab-btn svg{width:22px;height:22px;flex-shrink:0}
+.tab-btn.active{color:var(--ink)}
+.tab-btn.active .tab-dot{opacity:1}
+.tab-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);opacity:0;transition:opacity var(--transition)}
+.tab-btn:active{color:var(--ink-mid)}
+
+/* ── MORE PAGE ── */
+.more-link{display:flex;align-items:center;gap:14px;background:var(--white);border:1px solid var(--light-gray);border-radius:var(--border-r);padding:15px 16px;margin:0 16px 10px;box-shadow:var(--shadow-sm);color:inherit;width:calc(100% - 32px);text-align:left;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;text-decoration:none}
+.more-link:hover{text-decoration:none}
+.more-link:active{background:var(--off-white)}
+.more-link .ml-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;color:var(--white)}
+.more-link .ml-title{font-size:.9rem;font-weight:600;color:var(--text-dark)}
+.more-link .ml-sub{font-size:.72rem;font-weight:400;color:var(--text-light);margin-top:1px}
 
 /* ── HEADER ── */
 #site-header{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.25)}
@@ -63,8 +128,8 @@ select,input[type="text"]{font-family:inherit}
 /* ── PAGE NAV CHIPS ── */
 .pnr{display:flex;overflow-x:auto;gap:6px;padding:10px 16px;background:var(--white);border-bottom:1px solid var(--light-gray);-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:58px;z-index:90;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
 .pnr::-webkit-scrollbar{display:none}
-.pnc{background:var(--off-white);border:1.5px solid var(--light-gray);color:var(--navy);font-size:.75rem;font-weight:600;padding:5px 12px;border-radius:100px;white-space:nowrap;text-decoration:none!important;transition:var(--transition);flex-shrink:0;cursor:pointer}
-.pnc:hover{background:var(--navy);color:var(--white);border-color:var(--navy)}
+.pnc{background:var(--off-white);border:1.5px solid var(--light-gray);color:var(--ink);font-size:.75rem;font-weight:600;padding:5px 12px;border-radius:100px;white-space:nowrap;text-decoration:none!important;transition:var(--transition);flex-shrink:0;cursor:pointer}
+.pnc:hover{background:var(--navy);color:var(--white);border-color:var(--ink)}
 
 /* ── HERO ── */
 .hero{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-mid) 100%);color:var(--white);padding:28px 20px 24px;position:relative;overflow:hidden}
@@ -79,7 +144,7 @@ select,input[type="text"]{font-family:inherit}
 
 /* ── LAYOUT ── */
 .section{padding:20px 16px}
-.stitle{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+.stitle{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:4px}
 .ssub{font-size:.82rem;color:var(--text-light);margin-bottom:14px}
 .divider{height:1px;background:var(--light-gray);margin:20px 16px 0}
 .mt16{margin-top:16px}
@@ -89,13 +154,13 @@ select,input[type="text"]{font-family:inherit}
 .feat-card{background:var(--white);border-radius:var(--border-r);padding:14px 10px;text-align:center;box-shadow:var(--shadow-sm);border:1px solid var(--light-gray);transition:var(--transition)}
 .feat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
 .fci{font-size:1.6rem;margin-bottom:6px}
-.fct{font-size:.72rem;font-weight:700;color:var(--navy);line-height:1.2}
+.fct{font-size:.72rem;font-weight:700;color:var(--ink);line-height:1.2}
 .fcd{font-size:.68rem;color:var(--text-mid);margin-top:4px;line-height:1.35}
 
 /* ── BANNERS ── */
 .int-banner{background:#eef3f8;border-left:3px solid var(--gold);border-radius:6px;padding:12px 14px;margin:16px 16px 0;font-size:.82rem;color:var(--text-mid);line-height:1.5}
 .int-banner strong{color:var(--gold)}
-.int-banner a{color:var(--navy-mid);font-weight:600}
+.int-banner a{color:var(--ink-mid);font-weight:600}
 .con-quote{margin:16px 16px 0;background:var(--navy);color:rgba(255,255,255,.85);border-radius:var(--border-r);padding:16px 18px;font-size:.82rem;font-style:italic;line-height:1.6;position:relative}
 .con-quote::before{content:'\201C';font-family:'Playfair Display',serif;font-size:4rem;color:rgba(184,134,11,.3);position:absolute;top:-10px;left:10px;line-height:1}
 .con-quote p{padding-top:10px}
@@ -107,15 +172,15 @@ select,input[type="text"]{font-family:inherit}
 .ecard{background:var(--white);border-radius:var(--border-r);padding:16px 18px;box-shadow:var(--shadow-sm);border:1px solid var(--light-gray);display:flex;align-items:center;gap:16px}
 .ecard-left{flex:1;min-width:0}
 .ecard-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
-.ecard-lbl.primary{color:var(--navy-mid)}
+.ecard-lbl.primary{color:var(--ink-mid)}
 .ecard-lbl.general{color:#7a5c00}
-.ecard-date{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:8px}
+.ecard-date{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px}
 .prog-track{background:var(--light-gray);border-radius:100px;height:6px;overflow:hidden;margin-bottom:5px}
 .prog-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--navy),var(--navy-mid))}
 .prog-fill.gen{background:linear-gradient(90deg,var(--gold),var(--gold-light))}
 .ecard-right{text-align:center;flex-shrink:0;min-width:64px}
 .edays-num{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;line-height:1}
-.edays-num.primary{color:var(--navy)}
+.edays-num.primary{color:var(--ink)}
 .edays-num.general{color:var(--gold)}
 .edays-lbl{font-size:.65rem;color:var(--text-light);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
 .elive-badge{display:inline-flex;align-items:center;gap:3px;font-size:.62rem;font-weight:700;color:var(--text-light);margin-top:5px}
@@ -129,12 +194,12 @@ select,input[type="text"]{font-family:inherit}
 
 /* ── SEARCH / BILLS ── */
 .search-sec{padding:20px 16px 0}
-.sh2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+.sh2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ink);margin-bottom:4px}
 .sp{font-size:.82rem;color:var(--text-mid);line-height:1.55;margin-bottom:14px}
-.sp a{color:var(--navy-mid);font-weight:600}
+.sp a{color:var(--ink-mid);font-weight:600}
 .sbw{display:flex;gap:8px;margin-bottom:12px}
 .si{flex:1;border:1.5px solid var(--mid-gray);border-radius:8px;padding:10px 14px;font-size:.88rem;color:var(--text-dark);background:var(--white);outline:none;transition:var(--transition);-webkit-appearance:none}
-.si:focus{border-color:var(--navy-mid);box-shadow:0 0 0 3px rgba(0,63,122,.12)}
+.si:focus{border-color:var(--ink-mid);box-shadow:0 0 0 3px rgba(0,63,122,.12)}
 .sbtn{background:var(--navy);color:var(--white);border:none;border-radius:8px;padding:10px 14px;font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:5px;transition:var(--transition);white-space:nowrap}
 .sbtn:hover{background:var(--navy-mid)}
 .sbtn svg{width:15px;height:15px;fill:var(--white)}
@@ -142,23 +207,23 @@ select,input[type="text"]{font-family:inherit}
 .fi{flex:1;min-width:120px}
 .fl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light);margin-bottom:4px}
 .fs{width:100%;border:1.5px solid var(--mid-gray);border-radius:6px;padding:8px 28px 8px 10px;font-size:.8rem;color:var(--text-dark);background:var(--white);-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23718096'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;outline:none;transition:var(--transition)}
-.fs:focus{border-color:var(--navy-mid)}
+.fs:focus{border-color:var(--ink-mid)}
 .bill-list{display:flex;flex-direction:column;gap:8px}
 .bill-card{background:var(--white);border-radius:var(--border-r);box-shadow:var(--shadow-sm);border:1px solid var(--light-gray);padding:12px 14px;display:flex;gap:12px;align-items:flex-start;transition:var(--transition);cursor:pointer;text-decoration:none;color:inherit}
-.bill-card:hover{box-shadow:var(--shadow-md);border-color:var(--navy-mid);transform:translateX(2px);text-decoration:none;color:inherit}
+.bill-card:hover{box-shadow:var(--shadow-md);border-color:var(--ink-mid);transform:translateX(2px);text-decoration:none;color:inherit}
 .bi{font-size:1.4rem;flex-shrink:0;margin-top:1px}
 .bb{flex:1;min-width:0}
 .bn{font-size:.85rem;font-weight:600;color:var(--text-dark);line-height:1.35;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .bm{display:flex;flex-wrap:wrap;gap:5px}
 .bt{font-size:.68rem;font-weight:600;padding:2px 7px;border-radius:100px;white-space:nowrap}
-.bt.type{background:#e8f0fb;color:var(--navy-mid)}
+.bt.type{background:#e8f0fb;color:var(--ink-mid)}
 .bt.ga{background:#fef3e2;color:#8a5c00}
 .bt.com{background:#f0f4f0;color:#2d5a27}
 .bt.sta{background:#f0f8f4;color:var(--success)}
 .bt.upd{background:var(--light-gray);color:var(--text-mid)}
 .pagi{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:16px}
-.pbtn{background:var(--white);border:1.5px solid var(--mid-gray);color:var(--navy);font-weight:700;width:36px;height:36px;border-radius:6px;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
-.pbtn:hover{background:var(--navy);color:var(--white);border-color:var(--navy)}
+.pbtn{background:var(--white);border:1.5px solid var(--mid-gray);color:var(--ink);font-weight:700;width:36px;height:36px;border-radius:6px;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.pbtn:hover{background:var(--navy);color:var(--white);border-color:var(--ink)}
 .plbl{font-size:.8rem;color:var(--text-light);padding:0 6px}
 
 /* ── LEADERSHIP ── */
@@ -177,11 +242,11 @@ select,input[type="text"]{font-family:inherit}
 .lc{font-weight:700;color:var(--text-dark)}
 .ll{color:var(--text-light)}
 .lcard{background:var(--white);border-radius:var(--border-r);box-shadow:var(--shadow-sm);border:1px solid var(--light-gray);padding:10px 12px;display:flex;gap:12px;align-items:center;margin-bottom:8px;transition:var(--transition)}
-.lcard:hover{box-shadow:var(--shadow-md);border-color:var(--navy-mid)}
+.lcard:hover{box-shadow:var(--shadow-md);border-color:var(--ink-mid)}
 .lavatar{width:52px;height:62px;border-radius:8px;background:linear-gradient(135deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--white);flex-shrink:0}
 .lbody{flex:1;min-width:0}
 .lrole{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:2px}
-.lname{font-weight:700;font-size:.92rem;color:var(--navy);line-height:1.2}
+.lname{font-weight:700;font-size:.92rem;color:var(--ink);line-height:1.2}
 .lmeta{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap}
 .ltag{font-size:.67rem;font-weight:600;padding:2px 7px;border-radius:100px}
 .ltag.dist{background:var(--light-gray);color:var(--text-mid)}
@@ -191,18 +256,18 @@ select,input[type="text"]{font-family:inherit}
 
 /* ── PARTICIPATION LOADING ── */
 .part-fetch-bar{background:var(--white);border:1px solid var(--light-gray);border-radius:var(--border-r);padding:16px;margin:0 16px 12px;box-shadow:var(--shadow-sm);text-align:center}
-.pfb-title{font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+.pfb-title{font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:6px}
 .pfb-sub{font-size:.72rem;color:var(--text-light);margin-bottom:10px}
 .pfb-progress-track{background:var(--light-gray);border-radius:100px;height:6px;overflow:hidden;margin-bottom:8px}
 .pfb-progress-fill{height:100%;background:linear-gradient(90deg,var(--navy),var(--navy-mid));border-radius:100px;transition:width .4s ease}
 .pfb-steps{font-size:.7rem;color:var(--text-light)}
-.pfb-steps strong{color:var(--navy-mid)}
+.pfb-steps strong{color:var(--ink-mid)}
 .fetch-err-card{background:var(--white);border:1.5px solid #fca5a5;border-radius:var(--border-r);padding:18px;margin:0 16px 12px;text-align:center;box-shadow:var(--shadow-sm)}
 .fetch-err-icon{font-size:2rem;margin-bottom:8px}
 .fetch-err-msg{font-size:.82rem;color:var(--text-mid);margin-bottom:12px;line-height:1.5}
 .refresh-btn{background:var(--navy);color:var(--white);border:none;border-radius:6px;padding:9px 20px;font-size:.82rem;font-weight:700;cursor:pointer;transition:var(--transition)}
 .refresh-btn:hover{background:var(--navy-mid)}
-.refresh-btn-sm{background:transparent;border:1.5px solid var(--navy-mid);color:var(--navy-mid);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer;transition:var(--transition)}
+.refresh-btn-sm{background:transparent;border:1.5px solid var(--navy-mid);color:var(--ink-mid);border-radius:6px;padding:5px 12px;font-size:.72rem;font-weight:700;cursor:pointer;transition:var(--transition)}
 .refresh-btn-sm:hover{background:var(--navy-mid);color:var(--white)}
 .live-badge{display:inline-flex;align-items:center;gap:4px;background:#e8f8ee;color:var(--success);font-size:.67rem;font-weight:700;padding:2px 8px;border-radius:100px;border:1px solid #a7f3cc}
 .live-dot{width:5px;height:5px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
@@ -212,10 +277,10 @@ select,input[type="text"]{font-family:inherit}
 .rank-badge.silver{background:linear-gradient(135deg,#666,#aaa)}
 .rank-badge.bronze{background:linear-gradient(135deg,#7a3d00,#cd7f32)}
 .part-card{background:var(--white);border-radius:var(--border-r);box-shadow:var(--shadow-sm);border:1px solid var(--light-gray);padding:14px;margin-bottom:0;transition:var(--transition)}
-.part-card:hover{box-shadow:var(--shadow-md);border-color:var(--navy-mid)}
+.part-card:hover{box-shadow:var(--shadow-md);border-color:var(--ink-mid)}
 .part-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
 .part-info{flex:1;min-width:0}
-.part-name{font-size:.95rem;font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:4px}
+.part-name{font-size:.95rem;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:4px}
 .part-meta-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
 .ptag{font-size:.67rem;font-weight:600;padding:2px 8px;border-radius:100px}
 .ptag.R{background:#fde8e8;color:#8b0000}
@@ -224,7 +289,7 @@ select,input[type="text"]{font-family:inherit}
 .ptag.dist{background:#f0f8f0;color:#2d5a27}
 .part-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .pstat{background:var(--off-white);border-radius:6px;padding:8px 10px;text-align:center}
-.pstat-val{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--navy)}
+.pstat-val{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink)}
 .pstat-lbl{font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);margin-top:1px}
 .pstat-val.good{color:var(--success)}
 .prog-bar-wrap{margin-bottom:10px}
@@ -235,21 +300,21 @@ select,input[type="text"]{font-family:inherit}
 .committees-row{border-top:1px solid var(--light-gray);padding-top:8px}
 .committees-label{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light);margin-bottom:5px}
 .committee-pills{display:flex;flex-wrap:wrap;gap:4px}
-.cpill{font-size:.67rem;background:#eef3f8;color:var(--navy-mid);padding:2px 8px;border-radius:100px;font-weight:600}
+.cpill{font-size:.67rem;background:#eef3f8;color:var(--ink-mid);padding:2px 8px;border-radius:100px;font-weight:600}
 .part-list{display:flex;flex-direction:column;gap:10px;padding:0 16px 28px}
 .view-toggle{display:flex;border:1.5px solid var(--light-gray);border-radius:6px;overflow:hidden;margin-bottom:0}
 .vt-btn{flex:1;padding:7px 8px;font-size:.78rem;font-weight:700;background:var(--white);border:none;color:var(--text-light);transition:var(--transition);cursor:pointer}
 .vt-btn.active{background:var(--navy);color:var(--white)}
 .part-summary-bar{background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
 .psb-text{font-size:.8rem;color:var(--text-mid)}
-.psb-text strong{color:var(--navy)}
+.psb-text strong{color:var(--ink)}
 
 /* ── REPS PAGE ── */
 .stats-bar{display:flex;margin-bottom:14px;border-radius:var(--border-r);overflow:hidden;border:1.5px solid var(--light-gray)}
 .stat-item{flex:1;padding:10px 8px;text-align:center;background:var(--white);border-right:1px solid var(--light-gray)}
 .stat-item:last-child{border-right:none}
 .snum{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900}
-.snum.R{color:var(--rep-red)}.snum.D{color:var(--dem-blue)}.snum.N{color:var(--navy)}
+.snum.R{color:var(--rep-red)}.snum.D{color:var(--dem-blue)}.snum.N{color:var(--ink)}
 .slbl{font-size:.65rem;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
 .map-ph{background:var(--white);border:1.5px solid var(--light-gray);border-radius:var(--border-r);padding:20px;text-align:center;box-shadow:var(--shadow-sm)}
 .map-ph .mpi{font-size:2.5rem;margin-bottom:8px}
@@ -260,14 +325,14 @@ select,input[type="text"]{font-family:inherit}
 .fij{flex:1;min-width:140px}
 .flj{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light);margin-bottom:4px}
 .fsj{width:100%;border:1.5px solid var(--mid-gray);border-radius:6px;padding:8px 28px 8px 10px;font-size:.82rem;color:var(--text-dark);background:var(--white);-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23718096'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;outline:none;transition:var(--transition)}
-.fsj:focus{border-color:var(--navy-mid)}
+.fsj:focus{border-color:var(--ink-mid)}
 .psw{display:flex;gap:8px;margin-bottom:8px}
 .psi{flex:1;border:1.5px solid var(--mid-gray);border-radius:8px;padding:10px 14px;font-size:.88rem;color:var(--text-dark);background:var(--white);outline:none;transition:var(--transition);-webkit-appearance:none}
-.psi:focus{border-color:var(--navy-mid);box-shadow:0 0 0 3px rgba(0,63,122,.12)}
+.psi:focus{border-color:var(--ink-mid);box-shadow:0 0 0 3px rgba(0,63,122,.12)}
 .pfb{border:1.5px solid var(--mid-gray);background:var(--white);border-radius:8px;padding:10px 12px;font-size:.78rem;font-weight:700;color:var(--text-mid);transition:var(--transition);white-space:nowrap}
 .pfb.aR{background:#fde8e8;border-color:var(--rep-red);color:var(--rep-red)}
 .pfb.aD{background:#e8edfb;border-color:var(--dem-blue);color:var(--dem-blue)}
-.pfb.aA{background:var(--navy);border-color:var(--navy);color:var(--white)}
+.pfb.aA{background:var(--navy);border-color:var(--ink);color:var(--white)}
 .rc{font-size:.75rem;color:var(--text-light);margin:8px 0 4px}
 .panels-list{display:flex;flex-direction:column;gap:14px;padding:12px 16px 28px}
 .pc{background:var(--white);border-radius:10px;border:1px solid var(--light-gray);box-shadow:var(--shadow-sm);overflow:hidden}
@@ -279,14 +344,14 @@ select,input[type="text"]{font-family:inherit}
 .rrow{display:flex;align-items:center;gap:10px;background:var(--off-white);border-radius:8px;padding:10px 12px;color:inherit;cursor:pointer;transition:var(--transition)}
 .rrow:hover{background:var(--light-gray)}
 .senrow{display:flex;align-items:center;gap:12px;padding:10px;margin:-2px -2px 12px -2px;border-radius:8px;cursor:pointer;transition:var(--transition);border:1px solid var(--light-gray)}
-.senrow:hover{background:var(--off-white);border-color:var(--navy-mid)}
+.senrow:hover{background:var(--off-white);border-color:var(--ink-mid)}
 .mav{width:72px;height:86px;border-radius:8px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--white)}
 .mav img{width:100%;height:100%;object-fit:cover;display:block}
 .mav.R{background:linear-gradient(135deg,#8b1a1a,var(--rep-red))}
 .mav.D{background:linear-gradient(135deg,#1a2f8b,var(--dem-blue))}
 .mi{flex:1;min-width:0}
 .mcl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light)}
-.mname{font-size:.92rem;font-weight:700;color:var(--navy);line-height:1.2}
+.mname{font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.2}
 .mtags{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
 .mt{font-size:.64rem;font-weight:700;padding:1px 6px;border-radius:100px}
 .mt.dist{background:var(--light-gray);color:var(--text-mid)}
@@ -299,7 +364,7 @@ select,input[type="text"]{font-family:inherit}
 .rav.R{background:linear-gradient(135deg,#8b1a1a,var(--rep-red))}
 .rav.D{background:linear-gradient(135deg,#1a2f8b,var(--dem-blue))}
 .rinfo{flex:1;min-width:0;margin-top:5px}
-.rname{font-size:.78rem;font-weight:700;color:var(--navy);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rname{font-size:.78rem;font-weight:700;color:var(--ink);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rtags{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap}
 .nores{text-align:center;padding:30px 20px;color:var(--text-light);font-size:.88rem}
 .nores .nori{font-size:2rem;margin-bottom:8px}
@@ -311,17 +376,17 @@ select,input[type="text"]{font-family:inherit}
 .comm-tab.active{background:var(--navy);color:var(--white)}
 .comm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 8px}
 .comm-card{background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:12px 14px;box-shadow:var(--shadow-sm);transition:var(--transition);text-decoration:none;color:inherit;display:block}
-.comm-card:hover{box-shadow:var(--shadow-md);border-color:var(--navy-mid);transform:translateY(-1px);text-decoration:none}
-.comm-name{font-size:.82rem;font-weight:700;color:var(--navy);line-height:1.3;margin-bottom:7px}
+.comm-card:hover{box-shadow:var(--shadow-md);border-color:var(--ink-mid);transform:translateY(-1px);text-decoration:none}
+.comm-name{font-size:.82rem;font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:7px}
 .comm-stats{display:flex;gap:5px;flex-wrap:wrap}
 .comm-stat{font-size:.67rem;font-weight:600;padding:2px 7px;border-radius:100px}
-.comm-stat.bills{background:#e8f0fb;color:var(--navy-mid)}
+.comm-stat.bills{background:#e8f0fb;color:var(--ink-mid)}
 .comm-stat.members{background:var(--light-gray);color:var(--text-mid)}
 .comm-bar{height:3px;border-radius:100px;background:var(--light-gray);margin-top:8px;overflow:hidden}
 .comm-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--navy),var(--navy-mid))}
 .comm-results-count{font-size:.75rem;color:var(--text-light);padding:0 16px 6px}
 .info-section{background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:16px;margin:0 16px 12px;box-shadow:var(--shadow-sm)}
-.info-section h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:8px}
+.info-section h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:8px}
 .info-section p{font-size:.82rem;color:var(--text-mid);line-height:1.65}
 .info-section p+p{margin-top:8px}
 .sort-select{border:1.5px solid var(--mid-gray);border-radius:6px;padding:8px 28px 8px 10px;font-size:.78rem;color:var(--text-dark);background:var(--white);-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23718096'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;outline:none;flex-shrink:0}
@@ -330,7 +395,7 @@ select,input[type="text"]{font-family:inherit}
 #page-profile,#page-bill-detail,#page-comm-detail{transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
 #page-profile.active,#page-bill-detail.active,#page-comm-detail.active{transform:translateX(0)}
 .prof-back{position:sticky;top:58px;z-index:80;background:var(--white);border-bottom:1px solid var(--light-gray);display:flex;align-items:center;gap:10px;padding:11px 16px}
-.prof-back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;color:var(--navy-mid);font-size:.88rem;font-weight:700;cursor:pointer;padding:0}
+.prof-back-btn{display:flex;align-items:center;gap:5px;background:none;border:none;color:var(--ink-mid);font-size:.88rem;font-weight:700;cursor:pointer;padding:0}
 .prof-back-btn svg{flex-shrink:0}
 .prof-back-source{margin-left:auto;font-size:.67rem;color:var(--text-light)}
 .prof-hero{background:linear-gradient(170deg,var(--navy-dark) 0%,var(--navy) 100%);padding:24px 20px 28px;display:flex;gap:18px;align-items:flex-start}
@@ -353,27 +418,27 @@ select,input[type="text"]{font-family:inherit}
 .prof-map{width:100%;border-radius:8px;max-height:200px;object-fit:contain;background:var(--off-white);border:1px solid var(--light-gray)}
 .prof-comm-list{display:flex;flex-direction:column;gap:8px}
 .prof-comm-item{display:flex;align-items:center;gap:12px;background:var(--off-white);border-radius:8px;padding:11px 14px;border:1px solid var(--light-gray);text-decoration:none;color:inherit;transition:var(--transition)}
-.prof-comm-item:hover{background:var(--light-gray);border-color:var(--navy-mid)}
-.prof-comm-name{font-size:.85rem;font-weight:700;color:var(--navy)}
+.prof-comm-item:hover{background:var(--light-gray);border-color:var(--ink-mid)}
+.prof-comm-name{font-size:.85rem;font-weight:700;color:var(--ink)}
 .prof-comm-meta{font-size:.7rem;color:var(--text-light);margin-top:2px}
 .prof-bill-list{display:flex;flex-direction:column;gap:0}
 .prof-bill-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--light-gray);text-decoration:none;color:inherit}
 .prof-bill-item:last-child{border-bottom:none}
 .prof-bill-gavel{font-size:1.3rem;flex-shrink:0;margin-top:1px}
-.prof-bill-title{font-size:.82rem;font-weight:600;color:var(--navy);line-height:1.45;margin-bottom:5px}
+.prof-bill-title{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.45;margin-bottom:5px}
 .prof-bill-tags{display:flex;flex-wrap:wrap;gap:4px}
 .pbt{font-size:.63rem;font-weight:600;padding:2px 8px;border-radius:100px}
-.pbt.num{background:#e8f0fb;color:var(--navy-mid)}
+.pbt.num{background:#e8f0fb;color:var(--ink-mid)}
 .pbt.type{background:var(--light-gray);color:var(--text-mid)}
 .pbt.comm{background:#f0f8f0;color:#2d5a27}
 .pbt.yes{background:#e8f8ee;color:var(--success)}
 .pbt.no{background:#fde8e8;color:#8b0000}
 .pbt.date{background:var(--off-white);color:var(--text-light);border:1px solid var(--light-gray)}
 .pbt.result{background:#fef9ec;color:#7a4f00}
-.prof-view-all{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;padding:10px;border:1.5px solid var(--light-gray);border-radius:8px;font-size:.8rem;font-weight:700;color:var(--navy-mid);text-decoration:none;transition:var(--transition)}
-.prof-view-all:hover{background:var(--off-white);border-color:var(--navy-mid)}
+.prof-view-all{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;padding:10px;border:1.5px solid var(--light-gray);border-radius:8px;font-size:.8rem;font-weight:700;color:var(--ink-mid);text-decoration:none;transition:var(--transition)}
+.prof-view-all:hover{background:var(--off-white);border-color:var(--ink-mid)}
 .prof-loading{text-align:center;padding:60px 20px}
-.prof-loading-spinner{width:36px;height:36px;border:3px solid var(--light-gray);border-top-color:var(--navy-mid);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+.prof-loading-spinner{width:36px;height:36px;border:3px solid var(--light-gray);border-top-color:var(--ink-mid);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .prof-err{text-align:center;padding:40px 20px;color:var(--text-mid)}
 
@@ -384,14 +449,14 @@ select,input[type="text"]{font-family:inherit}
 .bill-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:16px 20px}
 .bill-info-cell{background:var(--off-white);border-radius:8px;padding:10px 12px;border:1px solid var(--light-gray)}
 .bill-info-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-light);margin-bottom:3px}
-.bill-info-value{font-size:.85rem;font-weight:700;color:var(--navy)}
+.bill-info-value{font-size:.85rem;font-weight:700;color:var(--ink)}
 .sponsor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sponsor-card{background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:12px;box-shadow:var(--shadow-sm);cursor:pointer;transition:var(--transition)}
-.sponsor-card:hover{box-shadow:var(--shadow-md);border-color:var(--navy-mid)}
+.sponsor-card:hover{box-shadow:var(--shadow-md);border-color:var(--ink-mid)}
 .sponsor-card.primary{border-left:3px solid var(--gold)}
 .sponsor-photo{width:54px;height:64px;border-radius:7px;object-fit:cover;background:var(--light-gray);margin:0 auto 8px;display:block}
 .sponsor-photo-fallback{width:54px;height:64px;border-radius:7px;background:linear-gradient(135deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--white);margin:0 auto 8px}
-.sponsor-name{font-size:.78rem;font-weight:700;color:var(--navy);text-align:center;line-height:1.3;margin-bottom:5px}
+.sponsor-name{font-size:.78rem;font-weight:700;color:var(--ink);text-align:center;line-height:1.3;margin-bottom:5px}
 .sponsor-tags{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
 
 /* ── FOOTER ── */
@@ -598,7 +663,7 @@ select,input[type="text"]{font-family:inherit}
         <span id="leadLiveBadge" style="display:none;align-items:center;gap:4px;background:#e8f8ee;color:var(--success);border:1px solid #a7f3cc;font-size:.67rem;font-weight:700;padding:2px 9px;border-radius:100px"><span class="live-dot"></span>Live</span>
       </div>
       <div class="ssub">136th General Assembly · Majority: Republican</div>
-      <div style="background:var(--off-white);border-radius:var(--border-r);padding:12px 14px;margin-bottom:14px;border:1px solid var(--light-gray);font-size:.78rem;color:var(--text-mid);line-height:1.6">The leadership of the Ohio General Assembly guides the legislative agenda for each chamber. The <strong style="color:var(--navy)">Speaker of the House</strong> and <strong style="color:var(--navy)">President of the Senate</strong> are the highest-ranking officers, presiding over their respective chambers and appointing committee chairs. The <strong style="color:var(--navy)">Majority Leader</strong> coordinates the majority party's legislative strategy, while the <strong style="color:var(--navy)">Minority Leader</strong> leads the opposition. <strong style="color:var(--navy)">Whips</strong> help ensure party members are present and voting as a bloc. All leadership positions are elected by each chamber at the start of each two-year General Assembly session.</div>
+      <div style="background:var(--off-white);border-radius:var(--border-r);padding:12px 14px;margin-bottom:14px;border:1px solid var(--light-gray);font-size:.78rem;color:var(--text-mid);line-height:1.6">The leadership of the Ohio General Assembly guides the legislative agenda for each chamber. The <strong style="color:var(--ink)">Speaker of the House</strong> and <strong style="color:var(--ink)">President of the Senate</strong> are the highest-ranking officers, presiding over their respective chambers and appointing committee chairs. The <strong style="color:var(--ink)">Majority Leader</strong> coordinates the majority party's legislative strategy, while the <strong style="color:var(--ink)">Minority Leader</strong> leads the opposition. <strong style="color:var(--ink)">Whips</strong> help ensure party members are present and voting as a bloc. All leadership positions are elected by each chamber at the start of each two-year General Assembly session.</div>
       <div class="ctabs">
         <button class="ctab active" onclick="switchChamber('house')">🏛️ House of Representatives</button>
         <button class="ctab" onclick="switchChamber('senate')">⚖️ Senate</button>
@@ -614,27 +679,27 @@ select,input[type="text"]{font-family:inherit}
         </div>
         <div id="houseLeaderCards">
           <div class="ssl">Speaker of the House</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(198,{name:'Matt Huffman',party:'Republican',ps:'R',chamber:'House',district:78})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/matt_huffman.jpg" alt="Matt Huffman" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">MH</div></div><div class="lbody"><div class="lrole">Speaker of the House</div><div class="lname">Matt Huffman</div><div class="lmeta"><span class="ltag dist">District 78</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(198,{name:'Matt Huffman',party:'Republican',ps:'R',chamber:'House',district:78})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/matt_huffman.jpg" alt="Matt Huffman" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">MH</div></div><div class="lbody"><div class="lrole">Speaker of the House</div><div class="lname">Matt Huffman</div><div class="lmeta"><span class="ltag dist">District 78</span><span class="ltag R">Republican</span></div></div></div>
           <div class="ssl">Speaker Pro Tempore</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(106,{name:'Gayle Manning',party:'Republican',ps:'R',chamber:'House',district:52})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/gayle_manning.jpg" alt="Gayle Manning" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">GM</div></div><div class="lbody"><div class="lrole">Speaker Pro Tempore</div><div class="lname">Gayle Manning</div><div class="lmeta"><span class="ltag dist">District 52</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(106,{name:'Gayle Manning',party:'Republican',ps:'R',chamber:'House',district:52})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/gayle_manning.jpg" alt="Gayle Manning" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">GM</div></div><div class="lbody"><div class="lrole">Speaker Pro Tempore</div><div class="lname">Gayle Manning</div><div class="lmeta"><span class="ltag dist">District 52</span><span class="ltag R">Republican</span></div></div></div>
           <div class="ssl">Majority Leader</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(187,{name:'Marilyn S. John',party:'Republican',ps:'R',chamber:'House',district:76})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/marilyn_s_john.jpg" alt="Marilyn S. John" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">MS</div></div><div class="lbody"><div class="lrole">Majority Leader</div><div class="lname">Marilyn S. John</div><div class="lmeta"><span class="ltag dist">District 76</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(187,{name:'Marilyn S. John',party:'Republican',ps:'R',chamber:'House',district:76})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/marilyn_s_john.jpg" alt="Marilyn S. John" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">MS</div></div><div class="lbody"><div class="lrole">Majority Leader</div><div class="lname">Marilyn S. John</div><div class="lmeta"><span class="ltag dist">District 76</span><span class="ltag R">Republican</span></div></div></div>
           <div class="ssl">Minority Leader</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(68,{name:'Dani Isaacsohn',party:'Democrat',ps:'D',chamber:'House',district:24})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/dani_isaacsohn.jpg" alt="Dani Isaacsohn" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">DI</div></div><div class="lbody"><div class="lrole">Minority Leader</div><div class="lname">Dani Isaacsohn</div><div class="lmeta"><span class="ltag dist">District 24</span><span class="ltag D">Democrat</span></div></div></div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(9,{name:'C. Allison Russo',party:'Democrat',ps:'D',chamber:'House',district:7})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/c_allison_russo.jpg" alt="C. Allison Russo" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">CA</div></div><div class="lbody"><div class="lrole">Minority Leader</div><div class="lname">C. Allison Russo</div><div class="lmeta"><span class="ltag dist">District 7</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(68,{name:'Dani Isaacsohn',party:'Democrat',ps:'D',chamber:'House',district:24})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/dani_isaacsohn.jpg" alt="Dani Isaacsohn" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">DI</div></div><div class="lbody"><div class="lrole">Minority Leader</div><div class="lname">Dani Isaacsohn</div><div class="lmeta"><span class="ltag dist">District 24</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(9,{name:'C. Allison Russo',party:'Democrat',ps:'D',chamber:'House',district:7})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/c_allison_russo.jpg" alt="C. Allison Russo" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">CA</div></div><div class="lbody"><div class="lrole">Minority Leader</div><div class="lname">C. Allison Russo</div><div class="lmeta"><span class="ltag dist">District 7</span><span class="ltag D">Democrat</span></div></div></div>
           <div class="ssl">Majority Whip</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(229,{name:'Nick Santucci',party:'Republican',ps:'R',chamber:'House',district:64})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/nick_santucci.jpg" alt="Nick Santucci" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">NS</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">Nick Santucci</div><div class="lmeta"><span class="ltag dist">District 64</span><span class="ltag R">Republican</span></div></div></div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(249,{name:'Riordan T. McClain',party:'Republican',ps:'R',chamber:'House',district:87})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/riordan_t_mcclain.jpg" alt="Riordan T. McClain" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">RT</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">Riordan T. McClain</div><div class="lmeta"><span class="ltag dist">District 87</span><span class="ltag R">Republican</span></div></div></div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(284,{name:'Steve Demetriou',party:'Republican',ps:'R',chamber:'House',district:35})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/steve_demetriou.jpg" alt="Steve Demetriou" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">SD</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">Steve Demetriou</div><div class="lmeta"><span class="ltag dist">District 35</span><span class="ltag R">Republican</span></div></div></div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(157,{name:'Josh Williams',party:'Republican',ps:'R',chamber:'House',district:44})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/josh_williams.jpg" alt="Josh Williams" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">JW</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">Josh Williams</div><div class="lmeta"><span class="ltag dist">District 44</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(229,{name:'Nick Santucci',party:'Republican',ps:'R',chamber:'House',district:64})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/nick_santucci.jpg" alt="Nick Santucci" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">NS</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">Nick Santucci</div><div class="lmeta"><span class="ltag dist">District 64</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(249,{name:'Riordan T. McClain',party:'Republican',ps:'R',chamber:'House',district:87})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/riordan_t_mcclain.jpg" alt="Riordan T. McClain" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">RT</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">Riordan T. McClain</div><div class="lmeta"><span class="ltag dist">District 87</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(284,{name:'Steve Demetriou',party:'Republican',ps:'R',chamber:'House',district:35})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/steve_demetriou.jpg" alt="Steve Demetriou" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">SD</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">Steve Demetriou</div><div class="lmeta"><span class="ltag dist">District 35</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(157,{name:'Josh Williams',party:'Republican',ps:'R',chamber:'House',district:44})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/josh_williams.jpg" alt="Josh Williams" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">JW</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">Josh Williams</div><div class="lmeta"><span class="ltag dist">District 44</span><span class="ltag R">Republican</span></div></div></div>
           <div class="ssl">Minority Whip</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(22,{name:'Beryl Piccolantonio',party:'Democrat',ps:'D',chamber:'House',district:4})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/beryl_piccolantonio.jpg" alt="Beryl Piccolantonio" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">BP</div></div><div class="lbody"><div class="lrole">Minority Whip</div><div class="lname">Beryl Piccolantonio</div><div class="lmeta"><span class="ltag dist">District 4</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(22,{name:'Beryl Piccolantonio',party:'Democrat',ps:'D',chamber:'House',district:4})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/beryl_piccolantonio.jpg" alt="Beryl Piccolantonio" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">BP</div></div><div class="lbody"><div class="lrole">Minority Whip</div><div class="lname">Beryl Piccolantonio</div><div class="lmeta"><span class="ltag dist">District 4</span><span class="ltag D">Democrat</span></div></div></div>
           <div class="ssl">Asst. Minority Leader</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(238,{name:'Phillip M. Robinson, Jr.',party:'Democrat',ps:'D',chamber:'House',district:19})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/phillip_m_robinson,_jr.jpg" alt="Phillip M. Robinson, Jr." style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">PM</div></div><div class="lbody"><div class="lrole">Asst. Minority Leader</div><div class="lname">Phillip M. Robinson, Jr.</div><div class="lmeta"><span class="ltag dist">District 19</span><span class="ltag D">Democrat</span></div></div></div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(89,{name:'Dontavius L. Jarrells',party:'Democrat',ps:'D',chamber:'House',district:1})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/dontavius_l_jarrells.jpg" alt="Dontavius L. Jarrells" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">DL</div></div><div class="lbody"><div class="lrole">Asst. Minority Leader</div><div class="lname">Dontavius L. Jarrells</div><div class="lmeta"><span class="ltag dist">District 1</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(238,{name:'Phillip M. Robinson, Jr.',party:'Democrat',ps:'D',chamber:'House',district:19})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/phillip_m_robinson,_jr.jpg" alt="Phillip M. Robinson, Jr." style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">PM</div></div><div class="lbody"><div class="lrole">Asst. Minority Leader</div><div class="lname">Phillip M. Robinson, Jr.</div><div class="lmeta"><span class="ltag dist">District 19</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(89,{name:'Dontavius L. Jarrells',party:'Democrat',ps:'D',chamber:'House',district:1})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/dontavius_l_jarrells.jpg" alt="Dontavius L. Jarrells" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">DL</div></div><div class="lbody"><div class="lrole">Asst. Minority Leader</div><div class="lname">Dontavius L. Jarrells</div><div class="lmeta"><span class="ltag dist">District 1</span><span class="ltag D">Democrat</span></div></div></div>
           <div class="ssl">Asst. Minority Whip</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(83,{name:'Desiree Tims',party:'Democrat',ps:'D',chamber:'House',district:38})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/desiree_tims.jpg" alt="Desiree Tims" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">DT</div></div><div class="lbody"><div class="lrole">Asst. Minority Whip</div><div class="lname">Desiree Tims</div><div class="lmeta"><span class="ltag dist">District 38</span><span class="ltag D">Democrat</span></div></div></div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(215,{name:'Michele Grim',party:'Democrat',ps:'D',chamber:'House',district:43})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/michele_grim.jpg" alt="Michele Grim" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">MG</div></div><div class="lbody"><div class="lrole">Asst. Minority Whip</div><div class="lname">Michele Grim</div><div class="lmeta"><span class="ltag dist">District 43</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(83,{name:'Desiree Tims',party:'Democrat',ps:'D',chamber:'House',district:38})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/desiree_tims.jpg" alt="Desiree Tims" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">DT</div></div><div class="lbody"><div class="lrole">Asst. Minority Whip</div><div class="lname">Desiree Tims</div><div class="lmeta"><span class="ltag dist">District 38</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(215,{name:'Michele Grim',party:'Democrat',ps:'D',chamber:'House',district:43})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/michele_grim.jpg" alt="Michele Grim" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">MG</div></div><div class="lbody"><div class="lrole">Asst. Minority Whip</div><div class="lname">Michele Grim</div><div class="lmeta"><span class="ltag dist">District 43</span><span class="ltag D">Democrat</span></div></div></div>
         
         </div>
       </div>
@@ -649,21 +714,21 @@ select,input[type="text"]{font-family:inherit}
         </div>
         <div id="senateLeaderCards">
           <div class="ssl">President</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(250,{name:'Rob McColley',party:'Republican',ps:'R',chamber:'Senate',district:1})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/rob_mccolley.jpg" alt="Rob McColley" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">RM</div></div><div class="lbody"><div class="lrole">President</div><div class="lname">Rob McColley</div><div class="lmeta"><span class="ltag dist">District 1</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(250,{name:'Rob McColley',party:'Republican',ps:'R',chamber:'Senate',district:1})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/rob_mccolley.jpg" alt="Rob McColley" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">RM</div></div><div class="lbody"><div class="lrole">President</div><div class="lname">Rob McColley</div><div class="lmeta"><span class="ltag dist">District 1</span><span class="ltag R">Republican</span></div></div></div>
           <div class="ssl">President Pro Tempore</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(29,{name:'Bill Reineke',party:'Republican',ps:'R',chamber:'Senate',district:26})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/bill_reineke.jpg" alt="Bill Reineke" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">BR</div></div><div class="lbody"><div class="lrole">President Pro Tempore</div><div class="lname">Bill Reineke</div><div class="lmeta"><span class="ltag dist">District 26</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(29,{name:'Bill Reineke',party:'Republican',ps:'R',chamber:'Senate',district:26})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/bill_reineke.jpg" alt="Bill Reineke" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">BR</div></div><div class="lbody"><div class="lrole">President Pro Tempore</div><div class="lname">Bill Reineke</div><div class="lmeta"><span class="ltag dist">District 26</span><span class="ltag R">Republican</span></div></div></div>
           <div class="ssl">Majority Leader</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(297,{name:'Theresa Gavarone',party:'Republican',ps:'R',chamber:'Senate',district:2})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/theresa_gavarone.jpg" alt="Theresa Gavarone" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">TG</div></div><div class="lbody"><div class="lrole">Majority Leader</div><div class="lname">Theresa Gavarone</div><div class="lmeta"><span class="ltag dist">District 2</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(297,{name:'Theresa Gavarone',party:'Republican',ps:'R',chamber:'Senate',district:2})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/theresa_gavarone.jpg" alt="Theresa Gavarone" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">TG</div></div><div class="lbody"><div class="lrole">Majority Leader</div><div class="lname">Theresa Gavarone</div><div class="lmeta"><span class="ltag dist">District 2</span><span class="ltag R">Republican</span></div></div></div>
           <div class="ssl">Minority Leader</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(230,{name:'Nickie J. Antonio',party:'Democrat',ps:'D',chamber:'Senate',district:23})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/nickie_j_antonio.jpg" alt="Nickie J. Antonio" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">NJ</div></div><div class="lbody"><div class="lrole">Minority Leader</div><div class="lname">Nickie J. Antonio</div><div class="lmeta"><span class="ltag dist">District 23</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(230,{name:'Nickie J. Antonio',party:'Democrat',ps:'D',chamber:'Senate',district:23})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/nickie_j_antonio.jpg" alt="Nickie J. Antonio" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">NJ</div></div><div class="lbody"><div class="lrole">Minority Leader</div><div class="lname">Nickie J. Antonio</div><div class="lmeta"><span class="ltag dist">District 23</span><span class="ltag D">Democrat</span></div></div></div>
           <div class="ssl">Majority Whip</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(107,{name:'George F. Lang',party:'Republican',ps:'R',chamber:'Senate',district:4})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/george_f_lang.jpg" alt="George F. Lang" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">GF</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">George F. Lang</div><div class="lmeta"><span class="ltag dist">District 4</span><span class="ltag R">Republican</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(107,{name:'George F. Lang',party:'Republican',ps:'R',chamber:'Senate',district:4})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/george_f_lang.jpg" alt="George F. Lang" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#8b1a1a,#cc2200)">GF</div></div><div class="lbody"><div class="lrole">Majority Whip</div><div class="lname">George F. Lang</div><div class="lmeta"><span class="ltag dist">District 4</span><span class="ltag R">Republican</span></div></div></div>
           <div class="ssl">Minority Whip</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(165,{name:'Kent Smith',party:'Democrat',ps:'D',chamber:'Senate',district:21})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/kent_smith.jpg" alt="Kent Smith" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">KS</div></div><div class="lbody"><div class="lrole">Minority Whip</div><div class="lname">Kent Smith</div><div class="lmeta"><span class="ltag dist">District 21</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(165,{name:'Kent Smith',party:'Democrat',ps:'D',chamber:'Senate',district:21})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/kent_smith.jpg" alt="Kent Smith" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">KS</div></div><div class="lbody"><div class="lrole">Minority Whip</div><div class="lname">Kent Smith</div><div class="lmeta"><span class="ltag dist">District 21</span><span class="ltag D">Democrat</span></div></div></div>
           <div class="ssl">Asst. Minority Leader</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(113,{name:'Hearcel F. Craig',party:'Democrat',ps:'D',chamber:'Senate',district:15})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/hearcel_f_craig.jpg" alt="Hearcel F. Craig" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">HF</div></div><div class="lbody"><div class="lrole">Asst. Minority Leader</div><div class="lname">Hearcel F. Craig</div><div class="lmeta"><span class="ltag dist">District 15</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(113,{name:'Hearcel F. Craig',party:'Democrat',ps:'D',chamber:'Senate',district:15})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/hearcel_f_craig.jpg" alt="Hearcel F. Craig" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">HF</div></div><div class="lbody"><div class="lrole">Asst. Minority Leader</div><div class="lname">Hearcel F. Craig</div><div class="lmeta"><span class="ltag dist">District 15</span><span class="ltag D">Democrat</span></div></div></div>
           <div class="ssl">Asst. Minority Whip</div>
-          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(24,{name:'Beth Liston',party:'Democrat',ps:'D',chamber:'Senate',district:16})"><div class="lavatar" style="overflow:hidden;padding:0"><img src="https://ohiocitizensaudit.org/Pictures/member_portraits/beth_liston.jpg" alt="Beth Liston" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">BL</div></div><div class="lbody"><div class="lrole">Asst. Minority Whip</div><div class="lname">Beth Liston</div><div class="lmeta"><span class="ltag dist">District 16</span><span class="ltag D">Democrat</span></div></div></div>
+          <div class="lcard" style="cursor:pointer" onclick="openMemberProfile(24,{name:'Beth Liston',party:'Democrat',ps:'D',chamber:'Senate',district:16})"><div class="lavatar" style="overflow:hidden;padding:0"><img loading="lazy" decoding="async" src="https://ohiocitizensaudit.org/Pictures/member_portraits/beth_liston.jpg" alt="Beth Liston" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:white;background:linear-gradient(135deg,#1a2f8b,#0044cc)">BL</div></div><div class="lbody"><div class="lrole">Asst. Minority Whip</div><div class="lname">Beth Liston</div><div class="lmeta"><span class="ltag dist">District 16</span><span class="ltag D">Democrat</span></div></div></div>
         </div>
       </div>
     </section>
@@ -781,8 +846,8 @@ select,input[type="text"]{font-family:inherit}
       <span class="pnc" onclick="goTo('part-list-anchor')">📊 Rankings</span>
     </div>
     <div id="panelExpandBtnsTop" style="display:none;gap:4px">
-      <button onclick="toggleAllPanels(true)" style="font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:100px;border:1.5px solid var(--light-gray);background:var(--off-white);color:var(--navy);cursor:pointer">Expand All</button>
-      <button onclick="toggleAllPanels(false)" style="font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:100px;border:1.5px solid var(--light-gray);background:var(--off-white);color:var(--navy);cursor:pointer">Collapse All</button>
+      <button onclick="toggleAllPanels(true)" style="font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:100px;border:1.5px solid var(--light-gray);background:var(--off-white);color:var(--ink);cursor:pointer">Expand All</button>
+      <button onclick="toggleAllPanels(false)" style="font-size:.68rem;font-weight:600;padding:4px 10px;border-radius:100px;border:1.5px solid var(--light-gray);background:var(--off-white);color:var(--ink);cursor:pointer">Collapse All</button>
     </div>
   </div>
 
@@ -846,7 +911,7 @@ select,input[type="text"]{font-family:inherit}
         </div>
       </div>
       <div id="partFetchBar" style="display:none;background:var(--white);border:1px solid var(--light-gray);border-radius:6px;padding:10px 14px;margin-top:8px">
-        <div style="font-size:.76rem;font-weight:600;color:var(--navy);margin-bottom:5px">⏳ Fetching live data from ohiocitizensaudit.org…</div>
+        <div style="font-size:.76rem;font-weight:600;color:var(--ink);margin-bottom:5px">⏳ Fetching live data from ohiocitizensaudit.org…</div>
         <div style="background:var(--light-gray);border-radius:100px;height:4px;overflow:hidden">
           <div style="height:100%;width:40%;background:linear-gradient(90deg,var(--navy),var(--navy-mid));border-radius:100px;animation:shimmer 1.5s infinite"></div>
         </div>
@@ -900,7 +965,7 @@ select,input[type="text"]{font-family:inherit}
 
     <!-- Live load progress bar (Netlify only) -->
     <div id="commLoadBar" style="display:none;background:var(--white);border:1px solid var(--light-gray);border-radius:var(--border-r);padding:12px 14px;margin:10px 16px 0;box-shadow:var(--shadow-sm)">
-      <div style="font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:6px">⏳ Fetching live committee data from ohiocitizensaudit.org…</div>
+      <div style="font-size:.78rem;font-weight:700;color:var(--ink);margin-bottom:6px">⏳ Fetching live committee data from ohiocitizensaudit.org…</div>
       <div style="background:var(--light-gray);border-radius:100px;height:5px;overflow:hidden">
         <div style="height:100%;width:60%;background:linear-gradient(90deg,var(--navy),var(--navy-mid));border-radius:100px;animation:shimmer 1.5s infinite"></div>
       </div>
@@ -979,7 +1044,7 @@ select,input[type="text"]{font-family:inherit}
   <div id="commDetailContent">
     <div class="prof-loading">
       <div class="prof-loading-spinner"></div>
-      <div style="font-size:.88rem;font-weight:600;color:var(--navy)">Loading committee...</div>
+      <div style="font-size:.88rem;font-weight:600;color:var(--ink)">Loading committee...</div>
     </div>
   </div>
 </div><!-- /page-comm-detail -->
@@ -1010,7 +1075,7 @@ select,input[type="text"]{font-family:inherit}
         <h3>The Ohio Redistricting Commission</h3>
         <p>Under the Ohio Constitution, the seven-member Ohio Redistricting Commission divides Ohio into Senate and House districts. Its members are the Governor, Auditor of State, Secretary of State, and four persons chosen by legislative leadership. No appointed member may be a current member of Congress.</p>
         <p>The Commission meets in years ending in "1" and must adopt a redistricting plan by <strong>September 15</strong> by a specified bipartisan vote. The plan generally cannot be changed until the next decennial redistricting.</p>
-        <p style="margin-top:8px"><a href="https://www.redistricting.ohio.gov/" target="_blank" style="color:var(--navy-mid);font-weight:700">redistricting.ohio.gov ↗</a></p>
+        <p style="margin-top:8px"><a href="https://www.redistricting.ohio.gov/" target="_blank" style="color:var(--ink-mid);font-weight:700">redistricting.ohio.gov ↗</a></p>
       </div>
       <div class="info-section">
         <h3>District Standards</h3>
@@ -1251,7 +1316,7 @@ select,input[type="text"]{font-family:inherit}
         </div>
       </div>
       <div style="margin:16px 16px 24px;background:var(--off-white);border-radius:var(--border-r);padding:12px 14px;font-size:.75rem;color:var(--text-light)">
-        <strong>Source:</strong> Ohio Legislative Service Commission · <a href="https://ohiocitizensaudit.org/how_districts_work.aspx" target="_blank" style="color:var(--navy-mid)">ohiocitizensaudit.org ↗</a>
+        <strong>Source:</strong> Ohio Legislative Service Commission · <a href="https://ohiocitizensaudit.org/how_districts_work.aspx" target="_blank" style="color:var(--ink-mid)">ohiocitizensaudit.org ↗</a>
       </div>
     </div>
   </main>
@@ -1558,7 +1623,7 @@ select,input[type="text"]{font-family:inherit}
             <div style="width:2px;background:var(--light-gray);flex:1;min-height:20px;margin:4px 0"></div>
           </div>
           <div style="padding-bottom:16px;flex:1">
-            <div style="font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:3px">Introduction</div>
+            <div style="font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:3px">Introduction</div>
             <div style="font-size:.78rem;color:var(--text-mid);line-height:1.6">The bill's title is read by the clerk on the day of introduction. In the Senate, a Senator files four copies with the Senate Clerk at least one hour before session. In the House, filed electronically. The bill is numbered and referred to the Rules and Reference Committee.</div>
           </div>
         </div>
@@ -1569,7 +1634,7 @@ select,input[type="text"]{font-family:inherit}
             <div style="width:2px;background:var(--light-gray);flex:1;min-height:20px;margin:4px 0"></div>
           </div>
           <div style="padding-bottom:16px;flex:1">
-            <div style="font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:3px">Committee Assignment</div>
+            <div style="font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:3px">Committee Assignment</div>
             <div style="font-size:.78rem;color:var(--text-mid);line-height:1.6">The Rules and Reference Committee reviews the bill and recommends it to the appropriate standing committee. This referral constitutes the bill's second consideration.</div>
           </div>
         </div>
@@ -1580,7 +1645,7 @@ select,input[type="text"]{font-family:inherit}
             <div style="width:2px;background:var(--light-gray);flex:1;min-height:20px;margin:4px 0"></div>
           </div>
           <div style="padding-bottom:16px;flex:1">
-            <div style="font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:3px">Standing Committee Review</div>
+            <div style="font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:3px">Standing Committee Review</div>
             <div style="font-size:.78rem;color:var(--text-mid);line-height:1.6">The committee holds public hearings. It may amend the bill, create a substitute bill, refer it to a subcommittee, postpone it indefinitely (defeating it), or favorably report it back to the full chamber.</div>
           </div>
         </div>
@@ -1591,7 +1656,7 @@ select,input[type="text"]{font-family:inherit}
             <div style="width:2px;background:var(--light-gray);flex:1;min-height:20px;margin:4px 0"></div>
           </div>
           <div style="padding-bottom:16px;flex:1">
-            <div style="font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:3px">Third Consideration &amp; Floor Vote</div>
+            <div style="font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:3px">Third Consideration &amp; Floor Vote</div>
             <div style="font-size:.78rem;color:var(--text-mid);line-height:1.6">The Rules and Reference Committee schedules the bill for floor debate. Members may speak, offer amendments, and vote. A majority vote is required to pass. This constitutes the third consideration.</div>
           </div>
         </div>
@@ -1602,7 +1667,7 @@ select,input[type="text"]{font-family:inherit}
             <div style="width:2px;background:var(--light-gray);flex:1;min-height:20px;margin:4px 0"></div>
           </div>
           <div style="padding-bottom:16px;flex:1">
-            <div style="font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:3px">Passed Both Chambers</div>
+            <div style="font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:3px">Passed Both Chambers</div>
             <div style="font-size:.78rem;color:var(--text-mid);line-height:1.6">The bill must pass both the House and Senate in identical form. If one chamber amends the other's version, a conference committee reconciles the differences before final passage.</div>
           </div>
         </div>
@@ -1613,7 +1678,7 @@ select,input[type="text"]{font-family:inherit}
             <div style="width:2px;background:var(--light-gray);flex:1;min-height:20px;margin:4px 0"></div>
           </div>
           <div style="padding-bottom:16px;flex:1">
-            <div style="font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:3px">Governor's Action</div>
+            <div style="font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:3px">Governor's Action</div>
             <div style="font-size:.78rem;color:var(--text-mid);line-height:1.6">The Act is presented to the Governor. If signed, it becomes law. If the Governor takes no action within 10 days (Sundays excluded), it becomes law automatically. If vetoed, it returns to the originating chamber for a potential override vote.</div>
           </div>
         </div>
@@ -1667,7 +1732,7 @@ select,input[type="text"]{font-family:inherit}
         </div>
       </div>
       <div style="margin:0 16px 24px;background:var(--off-white);border-radius:var(--border-r);padding:12px 14px;font-size:.75rem;color:var(--text-light)">
-        <strong>Source:</strong> Ohio Legislative Service Commission · <a href="https://ohiocitizensaudit.org/how_a_bill_becomes_law.aspx" target="_blank" style="color:var(--navy-mid)">ohiocitizensaudit.org ↗</a>
+        <strong>Source:</strong> Ohio Legislative Service Commission · <a href="https://ohiocitizensaudit.org/how_a_bill_becomes_law.aspx" target="_blank" style="color:var(--ink-mid)">ohiocitizensaudit.org ↗</a>
       </div>
     </div>
   </main>
@@ -1706,7 +1771,7 @@ select,input[type="text"]{font-family:inherit}
           <div style="background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:16px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px">
             <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">✉️</div>
             <div style="flex:1">
-              <div style="font-size:.9rem;font-weight:700;color:var(--navy)">Contact Form</div>
+              <div style="font-size:.9rem;font-weight:700;color:var(--ink)">Contact Form</div>
               <div style="font-size:.76rem;color:var(--text-light);margin-top:2px">Send a message via ohiocitizensaudit.org</div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -1717,7 +1782,7 @@ select,input[type="text"]{font-family:inherit}
           <div style="background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:16px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px">
             <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#1a3a8b,var(--dem-blue));display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📜</div>
             <div style="flex:1">
-              <div style="font-size:.9rem;font-weight:700;color:var(--navy)">Ohio Constitution</div>
+              <div style="font-size:.9rem;font-weight:700;color:var(--ink)">Ohio Constitution</div>
               <div style="font-size:.76rem;color:var(--text-light);margin-top:2px">codes.ohio.gov/ohio-constitution</div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -1728,7 +1793,7 @@ select,input[type="text"]{font-family:inherit}
           <div style="background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:16px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px">
             <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#1a5c1a,#2a9a2a);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📗</div>
             <div style="flex:1">
-              <div style="font-size:.9rem;font-weight:700;color:var(--navy)">Ohio Revised Code</div>
+              <div style="font-size:.9rem;font-weight:700;color:var(--ink)">Ohio Revised Code</div>
               <div style="font-size:.76rem;color:var(--text-light);margin-top:2px">codes.ohio.gov/ohio-revised-code</div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -1739,7 +1804,7 @@ select,input[type="text"]{font-family:inherit}
           <div style="background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:16px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px">
             <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#5c1a1a,var(--rep-red));display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">⚖️</div>
             <div style="flex:1">
-              <div style="font-size:.9rem;font-weight:700;color:var(--navy)">Ohio Senate</div>
+              <div style="font-size:.9rem;font-weight:700;color:var(--ink)">Ohio Senate</div>
               <div style="font-size:.76rem;color:var(--text-light);margin-top:2px">ohiosenate.gov</div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -1750,7 +1815,7 @@ select,input[type="text"]{font-family:inherit}
           <div style="background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:16px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px">
             <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#002b54,#005b9f);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🏛️</div>
             <div style="flex:1">
-              <div style="font-size:.9rem;font-weight:700;color:var(--navy)">Ohio House of Representatives</div>
+              <div style="font-size:.9rem;font-weight:700;color:var(--ink)">Ohio House of Representatives</div>
               <div style="font-size:.76rem;color:var(--text-light);margin-top:2px">ohiohouse.gov</div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -1761,7 +1826,7 @@ select,input[type="text"]{font-family:inherit}
           <div style="background:var(--white);border-radius:var(--border-r);border:1px solid var(--light-gray);padding:16px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px">
             <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#7a4f00,var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🔒</div>
             <div style="flex:1">
-              <div style="font-size:.9rem;font-weight:700;color:var(--navy)">Privacy Policy &amp; Legal</div>
+              <div style="font-size:.9rem;font-weight:700;color:var(--ink)">Privacy Policy &amp; Legal</div>
               <div style="font-size:.76rem;color:var(--text-light);margin-top:2px">Privacy, Terms &amp; Conditions, Disclaimer</div>
             </div>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -1795,7 +1860,7 @@ select,input[type="text"]{font-family:inherit}
   <div id="profContent">
     <div class="prof-loading">
       <div class="prof-loading-spinner"></div>
-      <div style="font-size:.88rem;font-weight:600;color:var(--navy)">Loading profile…</div>
+      <div style="font-size:.88rem;font-weight:600;color:var(--ink)">Loading profile…</div>
       <div style="font-size:.76rem;color:var(--text-light);margin-top:4px">Fetching from Ohio Citizen&#39;s Audit</div>
     </div>
   </div>
@@ -1816,12 +1881,82 @@ select,input[type="text"]{font-family:inherit}
   <div id="billContent">
     <div class="prof-loading">
       <div class="prof-loading-spinner"></div>
-      <div style="font-size:.88rem;font-weight:600;color:var(--navy)">Loading bill details...</div>
+      <div style="font-size:.88rem;font-weight:600;color:var(--ink)">Loading bill details...</div>
       <div style="font-size:.76rem;color:var(--text-light);margin-top:4px">Fetching from Ohio Citizen&#39;s Audit</div>
     </div>
   </div>
 
 </div><!-- /page-bill-detail -->
+
+<!-- ═══════════════════════════════════════════════
+     MORE PAGE
+════════════════════════════════════════════════ -->
+<div id="page-more" class="page">
+  <section class="page-hero" style="padding:26px 16px 18px">
+    <div class="eyebrow">⚖️ Ohio Citizen's Audit</div>
+    <h1>More</h1>
+    <p>Guides, resources, and ways to reach us.</p>
+  </section>
+
+  <div style="margin-top:14px">
+    <button class="more-link" onclick="showPage('dist')">
+      <div class="ml-icon" style="background:linear-gradient(135deg,#1a5c1a,#2a9a2a)">🗺️</div>
+      <div style="flex:1"><div class="ml-title">How Districts Work</div><div class="ml-sub">Find your district and how the maps are drawn</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="more-link" onclick="showPage('bill')">
+      <div class="ml-icon" style="background:linear-gradient(135deg,#1a3a8b,var(--dem-blue))">📜</div>
+      <div style="flex:1"><div class="ml-title">How a Bill Becomes Law</div><div class="ml-sub">Follow legislation from idea to statute</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="more-link" onclick="showPage('contact')">
+      <div class="ml-icon" style="background:linear-gradient(135deg,var(--navy),var(--navy-mid))">✉️</div>
+      <div style="flex:1"><div class="ml-title">Contact &amp; Resources</div><div class="ml-sub">Get in touch and explore official sources</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <a class="more-link" href="https://codes.ohio.gov/ohio-constitution" target="_blank" rel="noopener">
+      <div class="ml-icon" style="background:linear-gradient(135deg,#5c1a1a,var(--rep-red))">⚖️</div>
+      <div style="flex:1"><div class="ml-title">Ohio Constitution</div><div class="ml-sub">codes.ohio.gov ↗</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+    </a>
+    <a class="more-link" href="https://codes.ohio.gov/ohio-revised-code" target="_blank" rel="noopener">
+      <div class="ml-icon" style="background:linear-gradient(135deg,#7a4f00,var(--gold))">📗</div>
+      <div style="flex:1"><div class="ml-title">Ohio Revised Code</div><div class="ml-sub">codes.ohio.gov ↗</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+    </a>
+  </div>
+
+  <footer class="site-footer" style="margin-top:24px">
+    <div style="font-family:'Playfair Display',serif;font-weight:700;color:var(--white);margin-bottom:4px">Ohio Citizen's Audit</div>
+    <div>Nonpartisan · Nonprofit · ohiocitizensaudit.org</div>
+  </footer>
+</div><!-- /page-more -->
+
+<!-- ═══════════════════════════════════════════════
+     BOTTOM TAB BAR
+════════════════════════════════════════════════ -->
+<nav id="tabbar" aria-label="Primary">
+  <button class="tab-btn active" id="tab-home" onclick="showPage('home')" aria-label="Home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+    <span>Home</span><span class="tab-dot"></span>
+  </button>
+  <button class="tab-btn" id="tab-reps" onclick="showPage('reps')" aria-label="Current Representatives">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.6c2.5.2 4.2 1.7 4.9 4.4"/></svg>
+    <span>Reps</span><span class="tab-dot"></span>
+  </button>
+  <button class="tab-btn" id="tab-part" onclick="showPage('part')" aria-label="Member Participation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/></svg>
+    <span>Participation</span><span class="tab-dot"></span>
+  </button>
+  <button class="tab-btn" id="tab-comm" onclick="showPage('comm')" aria-label="Committees">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L3 7.5h18L12 3z"/><path d="M5 10v7M9.5 10v7M14.5 10v7M19 10v7"/><path d="M3 20h18"/></svg>
+    <span>Committees</span><span class="tab-dot"></span>
+  </button>
+  <button class="tab-btn" id="tab-more" onclick="showPage('more')" aria-label="More">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+    <span>More</span><span class="tab-dot"></span>
+  </button>
+</nav>
 
 
 <!-- ═══════════════════════════════════════════════
@@ -1829,13 +1964,37 @@ select,input[type="text"]{font-family:inherit}
 ════════════════════════════════════════════════ -->
 <script>
 /* ── ROUTER ── */
-function showPage(name){
+// Maps each page to the bottom tab that should highlight. Detail pages
+// (profile, bill-detail, comm-detail) are absent on purpose: the tab of the
+// page the user came from stays lit, like a native drill-down.
+var PAGE_TO_TAB = { home:'home', reps:'reps', part:'part', comm:'comm',
+                    more:'more', dist:'more', bill:'more', contact:'more' };
+
+function syncTabs(name){
+  var tab = PAGE_TO_TAB[name];
+  if (!tab) return; // detail page: keep current tab lit
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  var tb = document.getElementById('tab-' + tab);
+  if (tb) tb.classList.add('active');
+}
+
+function showPage(name, fromHistory){
+  var target = document.getElementById('page-'+name);
+  if (!target) return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
+  target.classList.add('active');
   window.scrollTo(0,0);
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   const nb=document.getElementById('nav-'+name);
   if(nb)nb.classList.add('active');
+  syncTabs(name);
+  // History: each in-app navigation becomes a real browser history entry so the
+  // system back gesture (Android back, iOS edge swipe) navigates within the app.
+  if (!fromHistory && window.history && history.pushState) {
+    if (!history.state || history.state.page !== name) {
+      try { history.pushState({ page: name }, '', '#' + name); } catch(e) {}
+    }
+  }
   // close nav
   document.getElementById('mobile-nav').classList.remove('open');
   document.getElementById('nav-toggle').classList.remove('open');
@@ -1860,6 +2019,48 @@ function showPage(name){
     else { filterComm(); }
   }
 }
+
+/* ── SKELETON TEMPLATES ── */
+// Content-shaped placeholders shown while detail pages fetch live data.
+function skelLines() {
+  return '<div style="padding:18px 16px" role="status" aria-label="Loading">'
+    + '<div class="skel" style="height:13px;width:42%;margin-bottom:14px"></div>'
+    + '<div class="skel" style="height:74px;margin-bottom:10px"></div>'
+    + '<div class="skel" style="height:74px;margin-bottom:20px"></div>'
+    + '<div class="skel" style="height:13px;width:34%;margin-bottom:14px"></div>'
+    + '<div class="skel" style="height:56px;margin-bottom:10px"></div>'
+    + '<div class="skel" style="height:56px"></div>'
+    + '</div>';
+}
+function skelDetailHero(label) {
+  return '<div style="padding:20px 16px 4px;display:flex;align-items:center;gap:14px" role="status" aria-label="Loading ' + (label || '') + '">'
+    + '<div class="skel skel-circle" style="width:64px;height:64px;flex-shrink:0"></div>'
+    + '<div style="flex:1"><div class="skel" style="height:17px;width:62%;margin-bottom:9px"></div>'
+    + '<div class="skel" style="height:12px;width:40%"></div></div>'
+    + '</div>';
+}
+function skelCommCards(n) {
+  var h = '';
+  for (var i = 0; i < (n || 6); i++) {
+    h += '<div class="skel" style="height:96px;border-radius:var(--border-r)"></div>';
+  }
+  return h;
+}
+
+/* ── BROWSER HISTORY (system back gesture) ── */
+window.addEventListener('popstate', function(ev){
+  var name = (ev.state && ev.state.page) || (location.hash ? location.hash.slice(1) : 'home');
+  if (!document.getElementById('page-' + name)) name = 'home';
+  var prevEl = document.querySelector('.page.active');
+  var prev   = prevEl ? prevEl.id.replace('page-','') : '';
+  showPage(name, true);
+  // Returning from a drill-down to the page it came from: restore scroll position.
+  var restore = -1;
+  if (prev === 'profile'     && name === profileFromPage)    restore = profileScrollY;
+  if (prev === 'bill-detail' && name === billFromPage)       restore = billScrollY;
+  if (prev === 'comm-detail' && name === commDetailFromPage) restore = commDetailScrollY;
+  if (restore >= 0) requestAnimationFrame(function(){ window.scrollTo(0, restore); });
+});
 
 function goTo(id){
   var el=document.getElementById(id);
@@ -2094,7 +2295,7 @@ function renderPanels(){
     const bg   = ps==='R' ? 'linear-gradient(135deg,#8b1a1a,#cc2200)' : 'linear-gradient(135deg,#1a2f8b,#0044cc)';
     const cls  = (type==='sen'?'mav':'rav')+' '+ps;
     return '<div class="'+cls+'">'
-      + '<img src="'+url+'" alt="'+name+'" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" '
+      + '<img loading="lazy" decoding="async" src="'+url+'" alt="'+name+'" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" '
       + 'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
       + '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-size:inherit;font-weight:700;color:white;background:'+bg+';border-radius:inherit">'+ini+'</div>'
       + '</div>';
@@ -2372,18 +2573,18 @@ function renderPart() {
           + 'onclick="event.stopPropagation();openMemberProfile('+m.id+','+fb+')">'
           // Portrait
           + '<div style="width:66px;height:81px;border-radius:8px;overflow:hidden;flex-shrink:0">'
-          + '<img src="'+pu+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+          + '<img loading="lazy" decoding="async" src="'+pu+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
           + '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-size:.78rem;font-weight:700;color:white;background:'+bg+'">'+ini+'</div>'
           + '</div>'
           // Info (left)
           + '<div style="flex:1;min-width:0">'
-          + '<div style="font-size:.86rem;font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:2px">'+m.name+'</div>'
+          + '<div style="font-size:.86rem;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:2px">'+m.name+'</div>'
           + '<div style="font-size:.7rem;color:var(--text-light)">'+chamberLabel+'</div>'
           + '<div style="font-size:.7rem;color:var(--text-light)">Dist. '+m.district+'</div>'
           + '</div>'
           // Numbers (right)
           + '<div style="text-align:right;flex-shrink:0">'
-          + '<div style="font-family:\'Playfair Display\',serif;font-size:1rem;font-weight:700;color:var(--navy)">'+m.passed+' / '+m.sponsored+'</div>'
+          + '<div style="font-family:\'Playfair Display\',serif;font-size:1rem;font-weight:700;color:var(--ink)">'+m.passed+' / '+m.sponsored+'</div>'
           + '</div>'
           + '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--light-gray)" stroke-width="2" style="flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg>'
           + '</div>';
@@ -2400,12 +2601,12 @@ function renderPart() {
         + '<div style="display:flex;align-items:flex-start;gap:10px;cursor:pointer" onclick="togglePanelBreakdown(\''+panelId+'\')">'
         + '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:white;display:flex;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-weight:700;font-size:.9rem;flex-shrink:0;margin-top:2px">'+p.panel+'</div>'
         + '<div style="flex:1;min-width:0">'
-        + '<div style="font-size:.88rem;font-weight:700;color:var(--navy)">Panel '+p.panel+'</div>'
+        + '<div style="font-size:.88rem;font-weight:700;color:var(--ink)">Panel '+p.panel+'</div>'
         + '<div style="font-size:.7rem;color:var(--text-light);margin-top:1px">'+p.members.length+' members</div>'
         + (sen ? '<div style="font-size:.7rem;color:var(--text-light)">Sen. '+sen.name+'</div>' : '')
         + '</div>'
         + '<div style="text-align:right;flex-shrink:0;padding-top:2px">'
-        + '<div style="font-family:\'Playfair Display\',serif;font-size:1rem;font-weight:700;color:var(--navy)">'+p.passed+' / '+p.sponsored+'</div>'
+        + '<div style="font-family:\'Playfair Display\',serif;font-size:1rem;font-weight:700;color:var(--ink)">'+p.passed+' / '+p.sponsored+'</div>'
         + '<div style="font-size:.68rem;color:var(--text-light)">Passed / Sponsored</div>'
         + '</div>'
         + '<svg id="'+panelId+'-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0;margin-left:6px;margin-top:4px;transition:transform .25s"><path d="M6 9l6 6 6-6"/></svg>'
@@ -2451,7 +2652,7 @@ function renderPart() {
       + '<div class="part-top">'
       + '<div class="rank-badge '+bc+'">'+m.rank+'</div>'
       + '<div style="width:66px;height:78px;border-radius:8px;overflow:hidden;flex-shrink:0">'
-      + '<img src="'+pu+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+      + '<img loading="lazy" decoding="async" src="'+pu+'" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
       + '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-size:.85rem;font-weight:700;color:white;background:'+bg+'">'+ini+'</div>'
       + '</div>'
       + '<div class="part-info"><div class="part-name">'+m.name+'</div>'
@@ -2644,11 +2845,7 @@ function filterComm() {
     : `Showing ${data.length} of ${total} committees`;
 
   if (commLoading && !commLoaded) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--text-light)">
-      <div style="font-size:2rem;margin-bottom:10px">⏳</div>
-      <div style="font-size:.88rem;font-weight:600;color:var(--navy)">Loading live committee data…</div>
-      <div style="font-size:.76rem;margin-top:4px">Fetching from ohiocitizensaudit.org</div>
-    </div>`;
+    grid.innerHTML = skelCommCards(6);
     return;
   }
 
@@ -2684,7 +2881,8 @@ var commDetailScrollY   = 0;
 var commDetailFromPage  = 'comm';
 
 function goBackFromCommDetail() {
-  showPage(commDetailFromPage);
+  if (window.history && history.state && history.state.page === 'comm-detail') { history.back(); return; }
+  showPage(commDetailFromPage, true);
   requestAnimationFrame(function() { window.scrollTo(0, commDetailScrollY); });
 }
 
@@ -2696,9 +2894,7 @@ function openCommDetailPage(id, name, chamber) {
   var src = document.getElementById('commDetailSource');
   if (src) src.textContent = chamber + ' Committee';
   var content = document.getElementById('commDetailContent');
-  content.innerHTML = '<div class="prof-loading"><div class="prof-loading-spinner"></div>'
-    + '<div style="font-size:.88rem;font-weight:600;color:var(--navy)">Loading '+name+'...</div>'
-    + '<div style="font-size:.76rem;color:var(--text-light);margin-top:4px">Fetching from Ohio Citizen&#39;s Audit</div></div>';
+  content.innerHTML = skelDetailHero(name) + skelLines();
   showPage('comm-detail');
 
   if (commDetailCache[id]) { renderCommDetail(commDetailCache[id]); return; }
@@ -2735,9 +2931,9 @@ function renderCommDetail(d) {
   // ── Role definitions ──
   html += '<div style="background:#f8f9fa;border-bottom:1px solid var(--light-gray);padding:14px 20px">'
     + '<div style="display:flex;flex-direction:column;gap:6px">'
-    + '<div style="font-size:.76rem;color:var(--text-mid);line-height:1.55"><strong style="color:var(--navy)">Chair</strong> — Controls the agenda, schedules hearings, presides over meetings.</div>'
-    + '<div style="font-size:.76rem;color:var(--text-mid);line-height:1.55"><strong style="color:var(--navy)">Vice Chair</strong> — Assists the chair and presides in their absence.</div>'
-    + '<div style="font-size:.76rem;color:var(--text-mid);line-height:1.55"><strong style="color:var(--navy)">Ranking Member</strong> — Highest-ranking minority party member on the committee.</div>'
+    + '<div style="font-size:.76rem;color:var(--text-mid);line-height:1.55"><strong style="color:var(--ink)">Chair</strong> — Controls the agenda, schedules hearings, presides over meetings.</div>'
+    + '<div style="font-size:.76rem;color:var(--text-mid);line-height:1.55"><strong style="color:var(--ink)">Vice Chair</strong> — Assists the chair and presides in their absence.</div>'
+    + '<div style="font-size:.76rem;color:var(--text-mid);line-height:1.55"><strong style="color:var(--ink)">Ranking Member</strong> — Highest-ranking minority party member on the committee.</div>'
     + '</div></div>';
 
   // ── Members ──
@@ -2760,11 +2956,11 @@ function renderCommDetail(d) {
       html += '<div style="display:flex;align-items:center;gap:12px;background:var(--off-white);border-radius:8px;padding:10px 12px;border:1px solid var(--light-gray);cursor:pointer" '
         + 'onclick="openMemberProfile(' + m.id + ',' + fb + ')">'
         + '<div style="width:48px;height:58px;border-radius:7px;overflow:hidden;flex-shrink:0">'
-        + '<img src="' + pu + '" style="width:100%;height:100%;object-fit:cover" onerror=\"this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'\">'
+        + '<img loading="lazy" decoding="async" src="' + pu + '" style="width:100%;height:100%;object-fit:cover" onerror=\"this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'\">'
         + '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-size:.85rem;font-weight:700;color:white;background:' + bg + '">' + ini + '</div>'
         + '</div>'
         + '<div style="flex:1;min-width:0">'
-        + '<div style="font-size:.88rem;font-weight:700;color:var(--navy);line-height:1.2">' + m.name + roleBadge + '</div>'
+        + '<div style="font-size:.88rem;font-weight:700;color:var(--ink);line-height:1.2">' + m.name + roleBadge + '</div>'
         + '<div style="font-size:.72rem;color:var(--text-light);margin-top:3px">District ' + m.district + ' · ' + m.party + '</div>'
         + '</div>'
         + '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--text-light)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>'
@@ -2821,7 +3017,9 @@ let profileFromPage = 'home';  // which page to return to
 let profileScrollY  = 0;       // scroll position to restore on back
 
 function goBackFromProfile() {
-  showPage(profileFromPage);
+  // Prefer real history so the back stack stays consistent; popstate restores scroll.
+  if (window.history && history.state && history.state.page === 'profile') { history.back(); return; }
+  showPage(profileFromPage, true);
   requestAnimationFrame(function() {
     window.scrollTo(0, profileScrollY);
   });
@@ -2849,7 +3047,7 @@ async function openMemberProfile(id, fallback) {
   var content = document.getElementById('profContent');
   content.innerHTML =
     '<div class="prof-hero">' +
-      '<img class="prof-portrait" src="' + portraitUrl + '" alt="' + (fallback.name||'') + '" ' +
+      '<img class="prof-portrait" loading="lazy" decoding="async" src="' + portraitUrl + '" alt="' + (fallback.name||'') + '" ' +
         'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>' +
       '<div class="prof-portrait-fallback" style="background:' + bg + ';display:none">' + initials + '</div>' +
       '<div class="prof-hero-info">' +
@@ -2857,10 +3055,7 @@ async function openMemberProfile(id, fallback) {
         '<div>' + ptags + '</div>' +
       '</div>' +
     '</div>' +
-    '<div class="prof-loading" style="background:none;padding:20px">' +
-      '<div class="prof-loading-spinner"></div>' +
-      '<div style="font-size:.82rem;color:var(--text-light)">Loading full profile...</div>' +
-    '</div>';
+    '<div class="prof-loading" style="background:none;padding:0">' + skelLines() + '</div>';
   showPage('profile');
 
   if (memberCache[id]) { renderMemberProfile(memberCache[id]); return; }
@@ -2909,7 +3104,7 @@ function renderMemberFallback(id, f) {
   if (f.district)ptags += '<span class="prof-tag dist">District ' + f.district + '</span>';
   document.getElementById('profContent').innerHTML =
     '<div class="prof-hero">' +
-      '<img class="prof-portrait" src="' + portraitUrl + '" alt="' + (f.name||'') + '" ' +
+      '<img class="prof-portrait" loading="lazy" decoding="async" src="' + portraitUrl + '" alt="' + (f.name||'') + '" ' +
         'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>' +
       '<div class="prof-portrait-fallback" style="background:' + bg + ';display:none">' + initials + '</div>' +
       '<div class="prof-hero-info">' +
@@ -2933,7 +3128,7 @@ function renderMemberProfile(d) {
   var bg = d.ps==='R' ? 'linear-gradient(135deg,#8b1a1a,#cc2200)' : 'linear-gradient(135deg,#1a2f8b,#0044cc)';
   // Use returned portrait URL or compute from name — always try to show a photo
   var pUrl = d.portraitUrl || nameToPortraitUrl(d.name || '');
-  var portraitHtml = '<img class="prof-portrait" src="' + pUrl + '" alt="' + d.name +
+  var portraitHtml = '<img class="prof-portrait" loading="lazy" decoding="async" src="' + pUrl + '" alt="' + d.name +
     '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>' +
     '<div class="prof-portrait-fallback" style="background:' + bg + ';display:none">' + initials + '</div>';
 
@@ -2965,7 +3160,7 @@ function renderMemberProfile(d) {
   // District map
   if (d.distMapUrl) {
     html += '<div class="prof-section"><div class="prof-section-title">District ' + d.district + ' Map</div>' +
-      '<img src="' + d.distMapUrl + '" class="prof-map" alt="District ' + d.district + '" onerror="this.parentElement.style.display=\'none\'"/></div>';
+      '<img loading="lazy" decoding="async" src="' + d.distMapUrl + '" class="prof-map" alt="District ' + d.district + '" onerror="this.parentElement.style.display=\'none\'"/></div>';
   }
 
   // Committees
@@ -3128,7 +3323,7 @@ function buildLeaderCards(leaders) {
     }
     html += '<div class="lcard"' + click + '>' +
       '<div class="lavatar" style="overflow:hidden;padding:0">' +
-        '<img src="' + url + '" alt="' + m.name + '" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" ' +
+        '<img loading="lazy" decoding="async" src="' + url + '" alt="' + m.name + '" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit" ' +
         'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
         '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-size:1.1rem;font-weight:700;color:white;background:' + bg + '">' + ini + '</div>' +
       '</div>' +
@@ -3202,7 +3397,8 @@ var billFromPage   = 'home';
 var billScrollY    = 0;
 
 function goBackFromBill() {
-  showPage(billFromPage);
+  if (window.history && history.state && history.state.page === 'bill-detail') { history.back(); return; }
+  showPage(billFromPage, true);
   requestAnimationFrame(function() {
     window.scrollTo(0, billScrollY);
   });
@@ -3218,9 +3414,11 @@ function openBillDetail(id, fallback) {
   if (lbl) lbl.textContent = labels[billFromPage] || '';
 
   document.getElementById('billContent').innerHTML =
-    '<div class="prof-loading"><div class="prof-loading-spinner"></div>' +
-    '<div style="font-size:.88rem;font-weight:600;color:var(--navy)">Loading bill...</div>' +
-    '<div style="font-size:.76rem;color:var(--text-light);margin-top:4px">' + (fallback.name||'') + '</div></div>';
+    '<div style="padding:20px 16px 0" role="status" aria-label="Loading bill">' +
+      '<div class="skel" style="height:22px;width:30%;margin-bottom:12px"></div>' +
+      '<div class="skel" style="height:18px;width:88%;margin-bottom:8px"></div>' +
+      '<div class="skel" style="height:18px;width:64%"></div>' +
+    '</div>' + skelLines();
   showPage('bill-detail');
 
   if (billCache[id]) { renderBillDetail(billCache[id]); return; }
@@ -3257,7 +3455,7 @@ function makeSponsorCard(sp, isPrimary) {
     ',party:' + JSON.stringify(sp.party) + ',ps:' + JSON.stringify(sp.ps) +
     ',chamber:' + JSON.stringify(sp.chamber) + ',district:' + sp.district + '})"';
   var photoHtml = sp.portraitUrl
-    ? '<img class="sponsor-photo" src="' + sp.portraitUrl + '" alt="' + sp.name +
+    ? '<img class="sponsor-photo" loading="lazy" decoding="async" src="' + sp.portraitUrl + '" alt="' + sp.name +
       '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"/>' +
       '<div class="sponsor-photo-fallback" style="background:' + bg + ';display:none">' + initials + '</div>'
     : '<div class="sponsor-photo-fallback" style="background:' + bg + '">' + initials + '</div>';
@@ -3483,12 +3681,33 @@ function togglePanelBreakdown(id) {
 }
 
 /* ── INIT ── */
+// Seed the history stack and honor hash deep links (#comm, #reps, ...) FIRST,
+// so routing works even if a later render step throws. Detail pages are
+// excluded since they have no content until opened.
+(function(){
+  var initial = 'home';
+  var h = location.hash.replace('#','');
+  if (h && PAGE_TO_TAB[h] && document.getElementById('page-' + h)) initial = h;
+  if (window.history && history.replaceState) {
+    try { history.replaceState({ page: initial }, '', '#' + initial); } catch(e) {}
+  }
+  if (initial !== 'home') showPage(initial, true);
+})();
 renderBillList();
 renderRecentList();
 drawHemi('houseChart',66,35);
 renderElections(ELECTIONS_FALLBACK);
 updateRegDeadline(ELECTIONS_FALLBACK);
 if(IS_NETLIFY) { fetchLiveLeadership(); fetchLiveHomeBills(); }
+// Service worker: instant shell loads + offline fallback. HTTPS-only and
+// skipped for local file usage so development stays cache-free.
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('/sw.js').catch(function(e){
+      console.warn('SW registration failed:', e.message);
+    });
+  });
+}
 </script>
 </body>
 </html>

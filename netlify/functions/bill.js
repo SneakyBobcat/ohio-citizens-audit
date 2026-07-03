@@ -1,6 +1,6 @@
 // netlify/functions/bill.js
 // Fetches bill details from ohiocitizensaudit.org/bill_details.aspx?id=X
-// Returns: title, number, type, GA, govLink, status, primarySponsors, coSponsors, committees
+// Returns: title, number, type, GA, govLink, status, topics, primarySponsors, coSponsors, committees
 
 const BASE = 'https://ohiocitizensaudit.org';
 const HEADERS = {
@@ -67,6 +67,29 @@ function parseBillPage(html, id) {
   const govLinkM = html.match(/href="(https?:\/\/(?:www\.legislature\.ohio\.gov|search-prod\.lis)[^"]+)"/);
   const govLink   = govLinkM ? govLinkM[1] : '';
 
+  // Topics section (custom OCA labels grouping related legislation).
+  // ASSUMPTION, pending live verification: topics render as short chip texts
+  // (anchors or spans) after the Topics heading, before the Committees section.
+  // The parser accepts only short, non-sentence tokens so prose is never
+  // mistaken for a topic chip; if nothing matches, topics is simply empty.
+  const topics = [];
+  const topicSecM = html.match(/(?:id="topics"|>\s*Topics\s*<)([\s\S]{0,2500}?)(?=<h2|id="committees"|Committees\s*<)/i);
+  if (topicSecM) {
+    const sec = topicSecM[1];
+    const chipRx = /<(?:a|span|li|button)\b[^>]*>([\s\S]*?)<\/(?:a|span|li|button)>/gi;
+    let cm;
+    const seenTopic = {};
+    while ((cm = chipRx.exec(sec)) !== null && topics.length < 15) {
+      const t = clean(cm[1]);
+      if (!t || t.length > 40) continue;               // chips are short labels
+      if (/[.!?]$/.test(t) || t.split(' ').length > 5) continue; // skip prose
+      if (/^(Topics|None|Top)$/i.test(t)) continue;
+      if (seenTopic[t.toLowerCase()]) continue;
+      seenTopic[t.toLowerCase()] = true;
+      topics.push(t);
+    }
+  }
+
   // Primary sponsors section
   const primarySponsors = [];
   const primSecM = html.match(/Primary Sponsors?<\/h[23]>([\s\S]*?)(?=Co-?Sponsors?<\/h[23]>|<h2|$)/i);
@@ -108,7 +131,7 @@ function parseBillPage(html, id) {
   }
 
   return {
-    id: parseInt(id), title, number, type, ga, status, committee,
+    id: parseInt(id), title, number, type, ga, status, committee, topics,
     govLink, primarySponsors, coSponsors, votes,
     url: `${BASE}/bill_details.aspx?id=${id}`,
     fetchedAt: new Date().toISOString(),
@@ -136,3 +159,4 @@ exports.handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
+exports._parse = parseBillPage;

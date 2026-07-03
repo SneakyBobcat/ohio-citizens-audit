@@ -13,6 +13,32 @@ Test on a real phone where possible. Items marked (data) confirm live pulls from
 - [ ] (data) Live-loaded leadership cards are TAPPABLE and open the right profile
 - [ ] Portraits load on leadership cards
 
+## Member Search (NEW page, under More)
+- [ ] More tab shows Member Search, Community Forum, and Privacy & Legal entries
+- [ ] Search finds members by last name, district number, or party
+- [ ] Chamber filter: Senate shows 33, House shows 99
+- [ ] Tapping a member opens their profile
+- [ ] "Full directory" link opens ohiocitizensaudit.org/member_directory.aspx for historical members
+
+## Member Search + site parity (NEW)
+- [ ] More tab shows Member Search; page lists all 132 current members
+- [ ] Search narrows by name, district number, or party text
+- [ ] Chamber and Party filter chips work together; tapping one row opens the profile
+- [ ] (data) Spot check a few members against ohiocitizensaudit.org/member_directory.aspx
+- [ ] More tab shows Community Forum link (forum.ohiocitizensaudit.org opens externally)
+- [ ] Bill detail: Topics chips appear in gray when the bill has topics on the main site; section absent when it has none
+- [ ] Footer legal links (Privacy, Terms, Disclaimer) open the main site legal page
+
+## Member Scoring (NEW tab)
+- [ ] Bottom tab now reads "Scoring" (replaced "Participation")
+- [ ] Scoring page shows "Representative Effectiveness Scores" hero
+- [ ] "How the score works" card expands/collapses; explains 5 stages, significance, and the 1.000 baseline
+- [ ] (data) Score list: if it populates, values + members match ohiocitizensaudit.org/member_participation.aspx
+- [ ] If scores are JS-rendered on the main site, app shows the "being integrated" state with a link out — NOT fabricated numbers
+- [ ] Party filter (All / Republican / Democrat) works
+- [ ] Tapping a member opens their profile
+- [ ] Old "Member Participation" view still reachable under the More tab
+
 ## Committees (live sourcing)
 - [ ] Committee detail page shows MEMBERS first (Chair, Vice Chair, Ranking Member badged, then the rest), then BILLS
 - [ ] (data) Member list matches the same committee on ohiocitizensaudit.org (spot check one House + one Senate committee)

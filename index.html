@@ -92,6 +92,18 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 .tab-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);opacity:0;transition:opacity var(--transition)}
 .tab-btn:active{color:var(--ink-mid)}
 
+/* ── MEMBER SCORING ── */
+.score-stage{display:flex;align-items:center;gap:9px;font-size:.8rem;color:var(--text-mid)}
+.score-stage-n{width:19px;height:19px;border-radius:50%;background:var(--navy);color:#fff;font-size:.66rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.score-chip{font-size:.74rem;font-weight:700;font-family:'JetBrains Mono','Courier Prime',monospace;padding:2px 9px;border-radius:7px;min-width:48px;text-align:center}
+.score-filter{font-size:.72rem;font-weight:600;padding:5px 12px;border-radius:100px;border:1.5px solid var(--light-gray);background:var(--white);color:var(--text-mid);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:all .15s ease}
+.score-filter.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.score-row{display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--light-gray);border-radius:var(--border-r);padding:11px 13px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow-sm)}
+.score-rank{font-size:.78rem;font-weight:700;color:var(--text-light);font-family:'JetBrains Mono','Courier Prime',monospace;width:26px;text-align:center;flex-shrink:0}
+.score-portrait{width:42px;height:50px;border-radius:7px;overflow:hidden;flex-shrink:0;background:var(--light-gray)}
+.score-val{font-size:1.05rem;font-weight:800;font-family:'JetBrains Mono','Courier Prime',monospace;line-height:1;flex-shrink:0;text-align:right}
+.score-val-sub{font-size:.6rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;text-align:right}
+
 /* ── MORE PAGE ── */
 .more-link{display:flex;align-items:center;gap:14px;background:var(--white);border:1px solid var(--light-gray);border-radius:var(--border-r);padding:15px 16px;margin:0 16px 10px;box-shadow:var(--shadow-sm);color:inherit;width:calc(100% - 32px);text-align:left;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;text-decoration:none}
 .more-link:hover{text-decoration:none}
@@ -1861,6 +1873,107 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 </div><!-- /page-bill-detail -->
 
 <!-- ═══════════════════════════════════════════════
+     MEMBER SEARCH PAGE
+════════════════════════════════════════════════ -->
+<div id="page-search" class="page">
+  <section class="hero fu fu1">
+    <div class="eyebrow">🔎 General Assembly</div>
+    <h1>Member <em>Directory</em></h1>
+    <p>Search every current member of the Ohio General Assembly by name, district, or chamber, then tap through to their full profile.</p>
+  </section>
+
+  <section class="section fu fu2" style="padding-top:6px;padding-bottom:0">
+    <input id="memberSearchInput" type="search" placeholder="Search by name or district number…" autocomplete="off"
+      oninput="renderMemberSearch()"
+      style="width:100%;padding:12px 15px;font-size:.92rem;font-family:inherit;border:1.5px solid var(--light-gray);border-radius:12px;background:var(--white);color:var(--text-dark);outline:none"
+      onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--light-gray)'"/>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px">
+      <span style="font-size:.7rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.04em">Chamber</span>
+      <button class="score-filter active" data-ch="all" onclick="filterMemberSearch('all')">All</button>
+      <button class="score-filter" data-ch="House" onclick="filterMemberSearch('House')">House</button>
+      <button class="score-filter" data-ch="Senate" onclick="filterMemberSearch('Senate')">Senate</button>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px">
+      <span style="font-size:.7rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.04em">Party</span>
+      <button class="score-filter active" data-pt="all" onclick="filterMemberSearchParty('all')">All</button>
+      <button class="score-filter" data-pt="R" onclick="filterMemberSearchParty('R')">Republican</button>
+      <button class="score-filter" data-pt="D" onclick="filterMemberSearchParty('D')">Democrat</button>
+    </div>
+  </section>
+
+  <section class="section fu fu3">
+    <div id="memberSearchCount" style="font-size:.72rem;color:var(--text-light);margin-bottom:8px"></div>
+    <div id="memberSearchList"></div>
+    <div style="background:var(--off-white);border:1px solid var(--light-gray);border-radius:var(--border-r);padding:13px 15px;margin-top:14px;font-size:.76rem;color:var(--text-mid);line-height:1.55">
+      Looking for members from past General Assemblies? The full historical directory lives on the main site.
+      <a href="https://ohiocitizensaudit.org/member_directory.aspx" target="_blank" rel="noopener" style="color:var(--ink-mid);font-weight:700">Open the full directory ↗</a>
+    </div>
+  </section>
+</div><!-- /page-search -->
+
+<!-- ═══════════════════════════════════════════════
+     MEMBER SCORING PAGE
+════════════════════════════════════════════════ -->
+<div id="page-score" class="page">
+  <section class="hero fu fu1" id="score-top">
+    <div class="eyebrow">📊 136th General Assembly</div>
+    <h1>Representative <em>Effectiveness Scores</em></h1>
+    <p>How effective is each lawmaker at moving their own bills through the legislative process and into law? The Legislative Effectiveness Score measures proven ability, not just activity.</p>
+  </section>
+
+  <!-- Methodology explainer -->
+  <section class="section fu fu2" style="padding-top:6px">
+    <div style="background:var(--white);border:1px solid var(--light-gray);border-radius:var(--border-r);box-shadow:var(--shadow-sm);overflow:hidden">
+      <button id="scoreMethodToggle" onclick="toggleScoreMethod()" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:none;padding:14px 16px;cursor:pointer;font-family:inherit;text-align:left;-webkit-tap-highlight-color:transparent">
+        <span style="display:flex;align-items:center;gap:10px">
+          <span style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;font-size:1rem;flex-shrink:0">⚖️</span>
+          <span><span style="display:block;font-size:.9rem;font-weight:700;color:var(--text-dark)">How the score works</span><span style="display:block;font-size:.72rem;color:var(--text-light);margin-top:1px">Methodology &amp; how to read it</span></span>
+        </span>
+        <svg id="scoreMethodChevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--mid-gray)" stroke-width="2" style="flex-shrink:0;transition:transform .2s ease"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div id="scoreMethodBody" style="display:none;padding:0 16px 16px;font-size:.82rem;color:var(--text-mid);line-height:1.6">
+        <p style="margin-bottom:12px">The score measures a lawmaker's proven ability to advance their own policy proposals through the legislature and into law. Instead of simply counting bills passed, which can reward members who only take on easy or symbolic measures, it uses the methodology from the Center for Effective Lawmaking to gauge real impact on the chamber's agenda.</p>
+
+        <div style="font-weight:700;color:var(--text-dark);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px">Two things about every sponsored bill</div>
+        <p style="margin-bottom:8px"><strong style="color:var(--text-dark)">How far it gets.</strong> Members earn credit as each bill clears the five stages of lawmaking:</p>
+        <div style="display:flex;flex-direction:column;gap:5px;margin:0 0 12px 2px">
+          <div class="score-stage"><span class="score-stage-n">1</span> Introduction</div>
+          <div class="score-stage"><span class="score-stage-n">2</span> Action in committee</div>
+          <div class="score-stage"><span class="score-stage-n">3</span> Action beyond committee (reaching the floor)</div>
+          <div class="score-stage"><span class="score-stage-n">4</span> Passing the chamber</div>
+          <div class="score-stage"><span class="score-stage-n">5</span> Becoming law</div>
+        </div>
+        <p style="margin-bottom:12px"><strong style="color:var(--text-dark)">How much it matters.</strong> Each bill is weighted by significance: commemorative (symbolic), substantive (standard policy), or significant (high-priority, heavily debated). A major tax overhaul counts for far more than naming a bridge.</p>
+
+        <div style="font-weight:700;color:var(--text-dark);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px">Reading the number</div>
+        <p style="margin-bottom:8px">Members are graded on a curve against others in the same General Assembly, so the baseline is fixed:</p>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px"><span class="score-chip" style="background:var(--light-gray);color:var(--text-mid)">1.000</span><span style="font-size:.78rem">Exactly the chamber average</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="score-chip" style="background:#e8f8ee;color:var(--success)">1.500</span><span style="font-size:.78rem">50% more effective than average</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><span class="score-chip" style="background:var(--off-white);color:var(--text-light);border:1px solid var(--light-gray)">0.500</span><span style="font-size:.78rem">Half as effective as average</span></div>
+        </div>
+        <p style="font-size:.72rem;color:var(--text-light);border-top:1px solid var(--light-gray);padding-top:10px;margin-top:4px">Source: Bucchianeri, Volden &amp; Wiseman, "Legislative Effectiveness in the American States," <em>American Political Science Review</em> 119.1 (2025), via the Center for Effective Lawmaking.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="section fu fu3" style="padding-top:0;padding-bottom:0">
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:.7rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:.04em">Party</span>
+      <button class="score-filter active" data-party="all" onclick="filterScore('all')">All</button>
+      <button class="score-filter" data-party="R" onclick="filterScore('R')">Republican</button>
+      <button class="score-filter" data-party="D" onclick="filterScore('D')">Democrat</button>
+    </div>
+  </section>
+
+  <!-- Score list -->
+  <section class="section fu fu3" id="score-list-anchor">
+    <div id="scoreList"></div>
+  </section>
+</div><!-- /page-score -->
+
+<!-- ═══════════════════════════════════════════════
      MORE PAGE
 ════════════════════════════════════════════════ -->
 <div id="page-more" class="page">
@@ -1871,6 +1984,21 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
   </section>
 
   <div style="margin-top:14px">
+    <button class="more-link" onclick="showPage('search')">
+      <div class="ml-icon" style="background:linear-gradient(135deg,var(--navy),var(--navy-mid))">🔎</div>
+      <div style="flex:1"><div class="ml-title">Member Search</div><div class="ml-sub">Find any current General Assembly member</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="more-link" onclick="showPage('search')">
+      <div class="ml-icon" style="background:linear-gradient(135deg,var(--navy),var(--navy-mid))">🔎</div>
+      <div style="flex:1"><div class="ml-title">Member Search</div><div class="ml-sub">Find any legislator by name or district</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <button class="more-link" onclick="showPage('part')">
+      <div class="ml-icon" style="background:linear-gradient(135deg,#5a2d82,#8a4dc4)">📊</div>
+      <div style="flex:1"><div class="ml-title">Member Participation</div><div class="ml-sub">Bills sponsored and percent passed</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
     <button class="more-link" onclick="showPage('dist')">
       <div class="ml-icon" style="background:linear-gradient(135deg,#1a5c1a,#2a9a2a)">🗺️</div>
       <div style="flex:1"><div class="ml-title">How Districts Work</div><div class="ml-sub">Find your district and how the maps are drawn</div></div>
@@ -1896,6 +2024,16 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
       <div style="flex:1"><div class="ml-title">Ohio Revised Code</div><div class="ml-sub">codes.ohio.gov ↗</div></div>
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
     </a>
+    <a class="more-link" href="https://forum.ohiocitizensaudit.org/" target="_blank" rel="noopener">
+      <div class="ml-icon" style="background:linear-gradient(135deg,#0f6e56,#18a37f)">💬</div>
+      <div style="flex:1"><div class="ml-title">Community Forum</div><div class="ml-sub">forum.ohiocitizensaudit.org ↗</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+    </a>
+    <a class="more-link" href="https://ohiocitizensaudit.org/legal.aspx" target="_blank" rel="noopener">
+      <div class="ml-icon" style="background:linear-gradient(135deg,#3c4f68,#5a7089)">📄</div>
+      <div style="flex:1"><div class="ml-title">Privacy &amp; Legal</div><div class="ml-sub">Privacy policy, terms, and disclaimer ↗</div></div>
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--mid-gray)" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+    </a>
   </div>
 
   <footer class="site-footer" style="margin-top:24px">
@@ -1916,9 +2054,9 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.6c2.5.2 4.2 1.7 4.9 4.4"/></svg>
     <span>Reps</span><span class="tab-dot"></span>
   </button>
-  <button class="tab-btn" id="tab-part" onclick="showPage('part')" aria-label="Member Participation">
+  <button class="tab-btn" id="tab-score" onclick="showPage('score')" aria-label="Member Scoring">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/></svg>
-    <span>Participation</span><span class="tab-dot"></span>
+    <span>Scoring</span><span class="tab-dot"></span>
   </button>
   <button class="tab-btn" id="tab-comm" onclick="showPage('comm')" aria-label="Committees">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L3 7.5h18L12 3z"/><path d="M5 10v7M9.5 10v7M14.5 10v7M19 10v7"/><path d="M3 20h18"/></svg>
@@ -1939,8 +2077,8 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 // Maps each page to the bottom tab that should highlight. Detail pages
 // (profile, bill-detail, comm-detail) are absent on purpose: the tab of the
 // page the user came from stays lit, like a native drill-down.
-var PAGE_TO_TAB = { home:'home', reps:'reps', part:'part', comm:'comm',
-                    more:'more', dist:'more', bill:'more', contact:'more' };
+var PAGE_TO_TAB = { home:'home', reps:'reps', score:'score', comm:'comm',
+                    more:'more', part:'more', search:'more', dist:'more', bill:'more', contact:'more' };
 
 function syncTabs(name){
   var tab = PAGE_TO_TAB[name];
@@ -1983,6 +2121,11 @@ function showPage(name, fromHistory){
     if(IS_NETLIFY && !commLoaded && !commLoading){ fetchLiveCommittees(); }
     else { filterComm(); }
   }
+  if(name==='score'){
+    if(IS_NETLIFY && !scoreLoaded && !scoreLoading){ fetchLiveScores(); }
+    else { renderScoreList(); }
+  }
+  if(name==='search'){ renderMemberSearch(); }
 }
 
 /* ── ATTRIBUTE-SAFE JSON ──
@@ -3194,6 +3337,192 @@ function renderMemberProfile(d) {
 /* ── LIVE PARTICIPATION FETCHING (Netlify) ── */
 const PART_FN = '/.netlify/functions/participation';
 
+/* ═══════════════ MEMBER SEARCH ═══════════════ */
+var SEARCH_INDEX = null;
+var searchChamber = 'all';
+
+function buildSearchIndex() {
+  if (SEARCH_INDEX) return SEARCH_INDEX;
+  var idx = [], seen = {};
+  function add(m, chamber) {
+    if (!m || !m.id || seen[m.id]) return;
+    seen[m.id] = true;
+    idx.push({ id:m.id, name:m.name, district:m.district||0, party:m.party||'', ps:m.ps||'', chamber:chamber });
+  }
+  try {
+    PANELS.forEach(function(p){
+      add(p.senator, 'Senate');
+      (p.reps||[]).forEach(function(r){ add(r, 'House'); });
+    });
+  } catch(e) {}
+  idx.sort(function(a,b){ return a.name.localeCompare(b.name); });
+  SEARCH_INDEX = idx;
+  return idx;
+}
+
+function filterMemberSearch(ch) {
+  searchChamber = ch;
+  document.querySelectorAll('#page-search .score-filter[data-ch]').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-ch') === ch);
+  });
+  renderMemberSearch();
+}
+var searchParty = 'all';
+function filterMemberSearchParty(p) {
+  searchParty = p;
+  document.querySelectorAll('#page-search .score-filter[data-pt]').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-pt') === p);
+  });
+  renderMemberSearch();
+}
+
+function renderMemberSearch() {
+  var host = document.getElementById('memberSearchList');
+  var countEl = document.getElementById('memberSearchCount');
+  if (!host) return;
+  var q = (document.getElementById('memberSearchInput').value || '').toLowerCase().trim();
+  var rows = buildSearchIndex().filter(function(m){
+    if (searchChamber !== 'all' && m.chamber !== searchChamber) return false;
+    if (searchParty !== 'all' && m.ps !== searchParty) return false;
+    if (!q) return true;
+    if (m.name.toLowerCase().indexOf(q) >= 0) return true;
+    if (/^\d+$/.test(q) && String(m.district) === q) return true;
+    if (m.party.toLowerCase().indexOf(q) === 0) return true;
+    return false;
+  });
+
+  if (countEl) countEl.textContent = rows.length + ' member' + (rows.length===1?'':'s');
+
+  if (!rows.length) {
+    host.innerHTML = '<div style="text-align:center;padding:28px 16px;color:var(--text-light)"><div style="font-size:1.5rem;margin-bottom:8px">🔎</div><div style="font-size:.85rem;font-weight:600;color:var(--text-mid)">No members match that search</div><div style="font-size:.75rem;margin-top:4px">Try a last name, a district number, or a party</div></div>';
+    return;
+  }
+
+  var html = '';
+  rows.forEach(function(m){
+    var pu  = nameToPortraitUrl(m.name);
+    var ini = m.name.split(' ').filter(function(w){return /[A-Z]/.test(w[0]||'');}).slice(0,2).map(function(w){return w[0];}).join('');
+    var bg  = m.ps==='R' ? 'linear-gradient(135deg,#8b1a1a,#cc2200)' : 'linear-gradient(135deg,#1a2f8b,#0044cc)';
+    var fb  = attrJSON({name:m.name, party:m.party, ps:m.ps, chamber:m.chamber, district:m.district});
+    html +=
+      '<div class="score-row" onclick="openMemberProfile(' + m.id + ',' + fb + ')">' +
+        '<div class="score-portrait">' +
+          '<img loading="lazy" decoding="async" src="' + pu + '" alt="' + m.name + '" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+          '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-size:.8rem;font-weight:700;color:#fff;background:' + bg + '">' + ini + '</div>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:.86rem;font-weight:700;color:var(--text-dark);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m.name + '</div>' +
+          '<div style="font-size:.72rem;color:var(--text-light);margin-top:3px;display:flex;align-items:center;gap:6px"><span class="ptag ' + m.ps + '">' + m.ps + '</span><span>District ' + m.district + ' · ' + m.chamber + '</span></div>' +
+        '</div>' +
+        '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-light)" stroke-width="2" style="flex-shrink:0"><path d="M9 18l6-6-6-6"/></svg>' +
+      '</div>';
+  });
+  host.innerHTML = html;
+}
+
+/* ═══════════════ MEMBER SCORING ═══════════════ */
+var SCORE_FN     = '/.netlify/functions/scoring';
+var SCORE_DATA   = [];      // live-fetched effectiveness scores
+var scoreLoaded  = false;
+var scoreLoading = false;
+var scoreParty   = 'all';
+
+function toggleScoreMethod() {
+  var body = document.getElementById('scoreMethodBody');
+  var chev = document.getElementById('scoreMethodChevron');
+  if (!body) return;
+  var open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function filterScore(p) {
+  scoreParty = p;
+  document.querySelectorAll('.score-filter').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-party') === p);
+  });
+  renderScoreList();
+}
+
+function scoreValColor(v) {
+  if (v >= 1.0)  return 'var(--success)';      // at or above chamber average
+  if (v >= 0.5)  return 'var(--text-mid)';     // moderately below
+  return 'var(--text-light)';
+}
+
+function renderScoreList() {
+  var host = document.getElementById('scoreList');
+  if (!host) return;
+
+  // Loading
+  if (scoreLoading && !scoreLoaded) {
+    var sk = '';
+    for (var i = 0; i < 6; i++) sk += '<div class="skel" style="height:64px;border-radius:var(--border-r);margin-bottom:8px"></div>';
+    host.innerHTML = sk;
+    return;
+  }
+
+  // No live data yet (e.g. scores rendered client-side on the main site).
+  if (!SCORE_DATA.length) {
+    host.innerHTML =
+      '<div style="background:var(--off-white);border:1px solid var(--light-gray);border-radius:var(--border-r);padding:22px 18px;text-align:center">' +
+        '<div style="font-size:1.6rem;margin-bottom:8px">📊</div>' +
+        '<div style="font-size:.9rem;font-weight:700;color:var(--text-dark);margin-bottom:5px">Effectiveness scores are being integrated</div>' +
+        '<div style="font-size:.8rem;color:var(--text-mid);line-height:1.55;margin-bottom:14px">The per-member scores are published on the main site. We are connecting them to the app so they appear here automatically.</div>' +
+        '<a href="https://ohiocitizensaudit.org/member_participation.aspx" target="_blank" rel="noopener" style="display:inline-block;font-size:.8rem;font-weight:700;color:#fff;background:var(--navy);padding:9px 16px;border-radius:100px;text-decoration:none">View scores on the main site ↗</a>' +
+      '</div>';
+    return;
+  }
+
+  // Live data
+  var rows = SCORE_DATA.filter(function(m){ return scoreParty === 'all' || m.ps === scoreParty; });
+  rows.sort(function(a,b){ return b.score - a.score; });
+
+  var html = '';
+  rows.forEach(function(m, i) {
+    var pu  = m.portraitUrl || nameToPortraitUrl(m.name);
+    var ini = m.name.split(' ').filter(function(w){return /[A-Z]/.test(w[0]||'');}).slice(0,2).map(function(w){return w[0];}).join('');
+    var bg  = m.ps==='R' ? 'linear-gradient(135deg,#8b1a1a,#cc2200)' : 'linear-gradient(135deg,#1a2f8b,#0044cc)';
+    var fb  = attrJSON({name:m.name, party:m.party, ps:m.ps, chamber:m.chamber, district:m.district});
+    var partyChip = '<span class="ptag ' + (m.ps==='R'?'R':'D') + '">' + (m.ps==='R'?'R':'D') + '</span>';
+    html +=
+      '<div class="score-row" onclick="openMemberProfile(' + m.id + ',' + fb + ')">' +
+        '<div class="score-rank">' + (i+1) + '</div>' +
+        '<div class="score-portrait">' +
+          '<img loading="lazy" decoding="async" src="' + pu + '" alt="' + m.name + '" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+          '<div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:\'Playfair Display\',serif;font-size:.8rem;font-weight:700;color:#fff;background:' + bg + '">' + ini + '</div>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:.86rem;font-weight:700;color:var(--text-dark);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m.name + '</div>' +
+          '<div style="font-size:.72rem;color:var(--text-light);margin-top:3px;display:flex;align-items:center;gap:6px">' + partyChip + '<span>District ' + m.district + ' · ' + m.chamber + '</span></div>' +
+        '</div>' +
+        '<div><div class="score-val" style="color:' + scoreValColor(m.score) + '">' + m.score.toFixed(3) + '</div><div class="score-val-sub">LES</div></div>' +
+      '</div>';
+  });
+  host.innerHTML = html;
+}
+
+async function fetchLiveScores() {
+  if (scoreLoading || scoreLoaded) return;
+  scoreLoading = true;
+  renderScoreList();
+  try {
+    var res = await fetch(SCORE_FN);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var json = await res.json();
+    if (json && json.members && json.members.length) {
+      SCORE_DATA = json.members;
+      scoreLoaded = true;
+    }
+  } catch (e) {
+    // Leave SCORE_DATA empty -> informative state, never fabricated scores.
+    console.warn('Scores fetch failed:', e.message);
+  } finally {
+    scoreLoading = false;
+    renderScoreList();
+  }
+}
+
 async function fetchLiveParticipation() {
   if (!IS_NETLIFY) { renderPart(); return; }
   if (partLoading) return;
@@ -3491,7 +3820,18 @@ function renderBillDetail(d) {
     '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>' +
     'View full bill on Ohio Citizen&#39;s Audit</a></div>';
 
-  document.getElementById('billContent').innerHTML = heroHtml + infoHtml + govHtml + primHtml + coHtml + footHtml;
+  var topicsHtml = '';
+  if (d.topics && d.topics.length) {
+    topicsHtml =
+      '<div style="padding:0 20px 14px">' +
+        '<div style="font-size:.68rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">Topics</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:5px">' +
+          d.topics.map(function(t){ return '<span class="pbt type">' + t + '</span>'; }).join('') +
+        '</div>' +
+      '</div>';
+  }
+
+  document.getElementById('billContent').innerHTML = heroHtml + infoHtml + topicsHtml + govHtml + primHtml + coHtml + footHtml;
   window.scrollTo(0,0);
 }
 
